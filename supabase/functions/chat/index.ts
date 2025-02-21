@@ -21,6 +21,8 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    console.log('Making request to OpenAI with messages:', messages);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,7 +30,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages,
         temperature: 0.7,
         max_tokens: 150,
@@ -38,13 +40,17 @@ serve(async (req) => {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('OpenAI API error:', data.error);
       throw new Error(data.error?.message || 'Failed to get AI response');
     }
+
+    console.log('Received successful response from OpenAI');
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('Error in chat function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
