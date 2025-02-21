@@ -10,7 +10,6 @@ interface Message {
   id: number;
   content: string;
   isBot: boolean;
-  image?: string;
 }
 
 const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your responses should be:
@@ -34,28 +33,17 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSend = async (message: string, image?: File) => {
-    if (!message.trim() && !image) return;
+  const handleSend = async (message: string) => {
+    if (!message.trim()) return;
 
     try {
       setIsLoading(true);
-      let imageUrl: string | undefined;
-
-      if (image) {
-        // Convert image to base64 for demo
-        imageUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(image);
-        });
-      }
 
       // Add user message
       const userMessage = {
         id: Date.now(),
         content: message,
         isBot: false,
-        image: imageUrl,
       };
       setMessages(prev => [...prev, userMessage]);
 
@@ -109,7 +97,6 @@ const Index = () => {
             key={message.id}
             message={message.content}
             isBot={message.isBot}
-            image={message.image}
           />
         ))}
         {isLoading && (
