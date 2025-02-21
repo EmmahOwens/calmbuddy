@@ -6,6 +6,8 @@ import { ChatSidebar } from "@/components/ChatSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
 
 interface Message {
   id: string;
@@ -34,6 +36,7 @@ const Index = () => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const { toast } = useToast();
 
   // Fetch chat sessions
@@ -82,7 +85,13 @@ const Index = () => {
         return;
       }
 
-      setMessages(data || []);
+      setMessages(
+        (data || []).map(msg => ({
+          id: msg.id,
+          content: msg.content,
+          isBot: msg.is_bot
+        }))
+      );
     };
 
     fetchMessages();
@@ -124,7 +133,11 @@ const Index = () => {
     if (messageError) {
       console.error("Failed to save welcome message:", messageError);
     } else {
-      setMessages([{ ...welcomeMessage, id: Date.now().toString() }]);
+      setMessages([{
+        id: Date.now().toString(),
+        content: welcomeMessage.content,
+        isBot: welcomeMessage.is_bot
+      }]);
     }
   };
 
@@ -149,7 +162,11 @@ const Index = () => {
 
       if (messageError) throw new Error(messageError.message);
 
-      setMessages(prev => [...prev, savedMessage]);
+      setMessages(prev => [...prev, {
+        id: savedMessage.id,
+        content: savedMessage.content,
+        isBot: savedMessage.is_bot
+      }]);
 
       // Update session title if it's the first message
       if (messages.length === 1) {
@@ -203,7 +220,11 @@ const Index = () => {
 
       if (aiMessageError) throw new Error(aiMessageError.message);
 
-      setMessages(prev => [...prev, savedAiMessage]);
+      setMessages(prev => [...prev, {
+        id: savedAiMessage.id,
+        content: savedAiMessage.content,
+        isBot: savedAiMessage.is_bot
+      }]);
 
       // Update session's updated_at timestamp
       await supabase
@@ -225,14 +246,24 @@ const Index = () => {
 
   return (
     <div className="flex h-screen">
-      <ChatSidebar
-        sessions={sessions}
-        currentSessionId={currentSessionId}
-        onNewChat={createNewChat}
-        onSelectChat={setCurrentSessionId}
-      />
+      {showSidebar && (
+        <ChatSidebar
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          onNewChat={createNewChat}
+          onSelectChat={setCurrentSessionId}
+        />
+      )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="shadow-lg hover:shadow-xl transition-shadow duration-200"
+          >
+            {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
+          </Button>
           <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
         </div>
         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
