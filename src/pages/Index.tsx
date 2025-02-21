@@ -90,7 +90,9 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-3xl mx-auto relative">
-      <ThemeToggle className="absolute top-4 right-4" />
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
+      </div>
       <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
         {messages.map((message) => (
           <ChatMessage
