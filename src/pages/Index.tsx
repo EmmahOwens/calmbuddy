@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -8,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { DeleteChatDialog } from "@/components/DeleteChatDialog";
 
 interface Message {
   id: string;
@@ -39,7 +39,6 @@ const Index = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const { toast } = useToast();
 
-  // Fetch chat sessions
   useEffect(() => {
     const fetchSessions = async () => {
       const { data, error } = await supabase
@@ -65,7 +64,6 @@ const Index = () => {
     fetchSessions();
   }, [currentSessionId]);
 
-  // Fetch messages for current session
   useEffect(() => {
     const fetchMessages = async () => {
       if (!currentSessionId) return;
@@ -119,7 +117,6 @@ const Index = () => {
     setCurrentSessionId(data.id);
     setMessages([]);
 
-    // Add initial bot message
     const welcomeMessage = {
       content: "Hi, I'm your mental health companion. How are you feeling today? I'm here to listen and support you.",
       is_bot: true,
@@ -147,7 +144,6 @@ const Index = () => {
     try {
       setIsLoading(true);
 
-      // Add user message
       const userMessage = {
         content: message,
         is_bot: false,
@@ -168,7 +164,6 @@ const Index = () => {
         isBot: savedMessage.is_bot
       }]);
 
-      // Update session title if it's the first message
       if (messages.length === 1) {
         await supabase
           .from('chat_sessions')
@@ -184,13 +179,11 @@ const Index = () => {
         );
       }
 
-      // Prepare conversation history for context
       const conversationHistory = messages.slice(-4).map(msg => ({
         role: msg.isBot ? "assistant" : "user",
         content: msg.content
       }));
 
-      // Call our Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [
@@ -207,7 +200,6 @@ const Index = () => {
 
       const aiResponse = data.choices[0].message.content;
 
-      // Save AI response
       const { data: savedAiMessage, error: aiMessageError } = await supabase
         .from('chat_messages')
         .insert([{
@@ -226,7 +218,6 @@ const Index = () => {
         isBot: savedAiMessage.is_bot
       }]);
 
-      // Update session's updated_at timestamp
       await supabase
         .from('chat_sessions')
         .update({ updated_at: new Date().toISOString() })
@@ -244,6 +235,37 @@ const Index = () => {
     }
   };
 
+  const handleDeleteChat = async () => {
+    if (!currentSessionId) return;
+
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', currentSessionId);
+
+      if (error) throw error;
+
+      setSessions(prev => prev.filter(session => session.id !== currentSessionId));
+      setMessages([]);
+      
+      const nextSession = sessions.find(session => session.id !== currentSessionId);
+      setCurrentSessionId(nextSession?.id || null);
+
+      toast({
+        title: "Success",
+        description: "Chat deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete chat",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex h-screen">
       {showSidebar && (
@@ -256,6 +278,7 @@ const Index = () => {
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          {currentSessionId && <DeleteChatDialog onConfirm={handleDeleteChat} />}
           <Button
             variant="ghost"
             size="icon"
