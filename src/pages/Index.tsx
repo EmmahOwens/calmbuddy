@@ -34,6 +34,8 @@ const Index = () => {
   const { toast } = useToast();
 
   const handleSend = async (message: string, image?: File) => {
+    if (!message.trim() && !image) return;
+
     try {
       setIsLoading(true);
       let imageUrl: string | undefined;
@@ -70,7 +72,7 @@ const Index = () => {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-4o",
           messages: [
             { role: "system", content: systemPrompt },
             ...conversationHistory,
@@ -82,7 +84,8 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get AI response");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Failed to get AI response");
       }
 
       const data = await response.json();
@@ -98,7 +101,7 @@ const Index = () => {
       console.error("Error in chat:", error);
       toast({
         title: "Error",
-        description: "Sorry, I couldn't process your message. Please try again.",
+        description: error.message || "Sorry, I couldn't process your message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,8 +111,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-3xl mx-auto relative">
-      <ThemeToggle />
-      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+      <ThemeToggle className="absolute top-4 right-4" />
+      <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
