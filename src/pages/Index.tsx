@@ -4,6 +4,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: number;
@@ -64,31 +65,21 @@ const Index = () => {
         content: msg.content
       }));
 
-      // Call AI endpoint to get response
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
+      // Call our Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: {
           messages: [
             { role: "system", content: systemPrompt },
             ...conversationHistory,
             { role: "user", content: message }
-          ],
-          temperature: 0.7,
-          max_tokens: 150,
-        }),
+          ]
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to get AI response");
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
       const aiResponse = data.choices[0].message.content;
 
       // Add AI response
