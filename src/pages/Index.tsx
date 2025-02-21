@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: number;
@@ -11,48 +12,98 @@ interface Message {
   image?: string;
 }
 
+const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your responses should be:
+- Supportive and non-judgmental
+- Focused on active listening and validation
+- Professional but warm in tone
+- Clear about not being a replacement for professional mental health care
+- Brief but meaningful (keep responses under 3 sentences unless necessary)
+- Structured to encourage user expression
+
+If you sense any serious mental health concerns, always recommend seeking professional help.`;
+
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      content: "Hi, I'm your mental health companion. How are you feeling today?",
+      content: "Hi, I'm your mental health companion. How are you feeling today? I'm here to listen and support you.",
       isBot: true,
     },
   ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSend = async (message: string, image?: File) => {
-    let imageUrl: string | undefined;
+    try {
+      setIsLoading(true);
+      let imageUrl: string | undefined;
 
-    if (image) {
-      // Convert image to base64 for demo
-      imageUrl = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(image);
-      });
-    }
+      if (image) {
+        // Convert image to base64 for demo
+        imageUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(image);
+        });
+      }
 
-    setMessages((prev) => [
-      ...prev,
-      {
+      // Add user message
+      const userMessage = {
         id: Date.now(),
         content: message,
         isBot: false,
         image: imageUrl,
-      },
-    ]);
+      };
+      setMessages(prev => [...prev, userMessage]);
 
-    // Simulate bot response
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          content: "Thank you for sharing. I'm here to listen and support you.",
-          isBot: true,
+      // Prepare conversation history for context
+      const conversationHistory = messages.slice(-4).map(msg => ({
+        role: msg.isBot ? "assistant" : "user",
+        content: msg.content
+      }));
+
+      // Call AI endpoint to get response
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
-      ]);
-    }, 1000);
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...conversationHistory,
+            { role: "user", content: message }
+          ],
+          temperature: 0.7,
+          max_tokens: 150,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
+
+      // Add AI response
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        content: aiResponse,
+        isBot: true,
+      }]);
+    } catch (error) {
+      console.error("Error in chat:", error);
+      toast({
+        title: "Error",
+        description: "Sorry, I couldn't process your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -67,6 +118,13 @@ const Index = () => {
             image={message.image}
           />
         ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
+              <p className="text-muted-foreground">Thinking...</p>
+            </div>
+          </div>
+        )}
       </div>
       <ChatInput onSend={handleSend} />
     </div>
