@@ -45,17 +45,17 @@ export function ChatSidebar({
 
   const ChatActions = ({ sessionId }: { sessionId: string }) => (
     <>
-      <DropdownMenuItem
-        onSelect={() => handleDelete(sessionId)}
+      <ContextMenuItem
         className="text-destructive focus:text-destructive"
+        onClick={() => handleDelete(sessionId)}
       >
         <Trash2 className="mr-2 h-4 w-4" />
         Delete
-      </DropdownMenuItem>
-      <DropdownMenuItem disabled>
+      </ContextMenuItem>
+      <ContextMenuItem disabled>
         <Archive className="mr-2 h-4 w-4" />
         Archive
-      </DropdownMenuItem>
+      </ContextMenuItem>
     </>
   );
 
@@ -68,7 +68,7 @@ export function ChatSidebar({
       <div className="flex-1 overflow-y-auto space-y-2">
         {sessions.map((session) => (
           <ContextMenu key={session.id}>
-            <ContextMenuTrigger>
+            <ContextMenuTrigger className="block w-full touch-none">
               <div
                 className={cn(
                   "w-full text-left p-3 rounded-lg flex items-center gap-3 hover:bg-accent transition-colors group",
@@ -98,7 +98,17 @@ export function ChatSidebar({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <ChatActions sessionId={session.id} />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => handleDelete(session.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      <Archive className="mr-2 h-4 w-4" />
+                      Archive
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
