@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -261,10 +262,20 @@ const Index = () => {
       if (error) throw error;
 
       setSessions(prev => prev.filter(session => session.id !== sessionId));
+      
       if (currentSessionId === sessionId) {
         setMessages([]);
-        const nextSession = sessions.find(session => session.id !== sessionId);
-        setCurrentSessionId(nextSession?.id || null);
+        // Find the next available session
+        const remainingSessions = sessions.filter(session => session.id !== sessionId);
+        
+        if (remainingSessions.length > 0) {
+          // If there are remaining sessions, select the first one
+          const nextSession = remainingSessions[0];
+          setCurrentSessionId(nextSession.id);
+        } else {
+          // If no sessions remain, create a new one
+          await createNewChat();
+        }
       }
 
       toast({
