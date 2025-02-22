@@ -3,6 +3,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ChatSettings } from "@/components/ChatSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,21 @@ const Index = () => {
 
     fetchMessages();
   }, [currentSessionId]);
+
+  useEffect(() => {
+    const initializeChat = async () => {
+      const { data: existingSessions } = await supabase
+        .from('chat_sessions')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (!existingSessions || existingSessions.length === 0) {
+        await createNewChat();
+      }
+    };
+
+    initializeChat();
+  }, []);
 
   const createNewChat = async () => {
     const { data, error } = await supabase
@@ -277,6 +293,7 @@ const Index = () => {
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <ChatSettings />
           <Button
             variant="ghost"
             size="icon"
