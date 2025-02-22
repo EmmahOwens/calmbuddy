@@ -19,6 +19,7 @@ interface ChatSession {
   id: string;
   title: string;
   updated_at: string;
+  archived: boolean;
 }
 
 const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your responses should be:
@@ -280,8 +281,74 @@ const Index = () => {
     }
   };
 
+  const handleArchiveChat = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .update({ archived: true })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      setSessions(prev => prev.map(session => 
+        session.id === sessionId 
+          ? { ...session, archived: true } 
+          : session
+      ));
+
+      toast({
+        title: "Success",
+        description: "Chat archived successfully",
+      });
+    } catch (error) {
+      console.error("Error archiving chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive chat",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnarchiveChat = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .update({ archived: false })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      setSessions(prev => prev.map(session => 
+        session.id === sessionId 
+          ? { ...session, archived: false } 
+          : session
+      ));
+
+      toast({
+        title: "Success",
+        description: "Chat unarchived successfully",
+      });
+    } catch (error) {
+      console.error("Error unarchiving chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to unarchive chat",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex h-screen">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setShowSidebar(!showSidebar)}
+        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200"
+      >
+        {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
+      </Button>
       {showSidebar && (
         <ChatSidebar
           sessions={sessions}
@@ -289,19 +356,13 @@ const Index = () => {
           onNewChat={createNewChat}
           onSelectChat={setCurrentSessionId}
           onDeleteChat={handleDeleteChat}
+          onArchiveChat={handleArchiveChat}
+          onUnarchiveChat={handleUnarchiveChat}
         />
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
           <ChatSettings />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="shadow-lg hover:shadow-xl transition-shadow duration-200"
-          >
-            {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
-          </Button>
           <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
         </div>
         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
