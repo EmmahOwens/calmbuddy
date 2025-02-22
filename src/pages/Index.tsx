@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
-import { DeleteChatDialog } from "@/components/DeleteChatDialog";
 
 interface Message {
   id: string;
@@ -235,22 +234,21 @@ const Index = () => {
     }
   };
 
-  const handleDeleteChat = async () => {
-    if (!currentSessionId) return;
-
+  const handleDeleteChat = async (sessionId: string) => {
     try {
       const { error } = await supabase
         .from('chat_sessions')
         .delete()
-        .eq('id', currentSessionId);
+        .eq('id', sessionId);
 
       if (error) throw error;
 
-      setSessions(prev => prev.filter(session => session.id !== currentSessionId));
-      setMessages([]);
-      
-      const nextSession = sessions.find(session => session.id !== currentSessionId);
-      setCurrentSessionId(nextSession?.id || null);
+      setSessions(prev => prev.filter(session => session.id !== sessionId));
+      if (currentSessionId === sessionId) {
+        setMessages([]);
+        const nextSession = sessions.find(session => session.id !== sessionId);
+        setCurrentSessionId(nextSession?.id || null);
+      }
 
       toast({
         title: "Success",
@@ -274,11 +272,11 @@ const Index = () => {
           currentSessionId={currentSessionId}
           onNewChat={createNewChat}
           onSelectChat={setCurrentSessionId}
+          onDeleteChat={handleDeleteChat}
         />
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-          {currentSessionId && <DeleteChatDialog onConfirm={handleDeleteChat} />}
           <Button
             variant="ghost"
             size="icon"
