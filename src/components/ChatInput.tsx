@@ -19,7 +19,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
       setMessage("");
       // Reset textarea height after sending
       if (textareaRef.current) {
-        textareaRef.current.style.height = "40px";
+        textareaRef.current.style.height = "24px";
       }
     }
   };
@@ -27,7 +27,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "40px";
+      textarea.style.height = "24px"; // Start with smaller initial height
       const scrollHeight = textarea.scrollHeight;
       // Limit maximum height to 200px
       textarea.style.height = `${Math.min(scrollHeight, 200)}px`;
@@ -54,13 +54,13 @@ export function ChatInput({ onSend }: ChatInputProps) {
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="border-none bg-transparent focus-visible:ring-0 min-h-[40px] max-h-[200px] py-2 px-3 resize-none overflow-y-auto"
+          className="border-none bg-transparent focus-visible:ring-0 min-h-[24px] py-1 px-3 resize-none overflow-y-auto"
           style={{
-            height: "40px"
+            height: "24px"
           }}
         />
       </div>
-      <Button type="submit" size="icon" className="neumorphic self-end">
+      <Button type="submit" size="icon" className="neumorphic">
         <SendIcon className="h-5 w-5 dark:text-neuro-purple text-black" />
       </Button>
     </form>
