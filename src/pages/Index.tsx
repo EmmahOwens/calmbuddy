@@ -57,7 +57,11 @@ const Index = () => {
         return;
       }
 
-      setSessions(data);
+      setSessions(data.map(session => ({
+        ...session,
+        archived: session.archived || false
+      })));
+      
       if (data.length > 0 && !currentSessionId) {
         setCurrentSessionId(data[0].id);
       }
@@ -116,7 +120,7 @@ const Index = () => {
     const { data, error } = await supabase
       .from('chat_sessions')
       .insert([
-        { title: 'New Chat' }
+        { title: 'New Chat', archived: false }
       ])
       .select()
       .single();
@@ -130,7 +134,7 @@ const Index = () => {
       return;
     }
 
-    setSessions(prev => [data, ...prev]);
+    setSessions(prev => [{ ...data, archived: false }, ...prev]);
     setCurrentSessionId(data.id);
     setMessages([]);
 
@@ -361,15 +365,17 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
       {showSidebar && (
-        <ChatSidebar
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onNewChat={createNewChat}
-          onSelectChat={setCurrentSessionId}
-          onDeleteChat={handleDeleteChat}
-          onArchiveChat={handleArchiveChat}
-          onUnarchiveChat={handleUnarchiveChat}
-        />
+        <div className="max-w-[66.666667%]">
+          <ChatSidebar
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onNewChat={createNewChat}
+            onSelectChat={setCurrentSessionId}
+            onDeleteChat={handleDeleteChat}
+            onArchiveChat={handleArchiveChat}
+            onUnarchiveChat={handleUnarchiveChat}
+          />
+        </div>
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
