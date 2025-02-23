@@ -136,7 +136,7 @@ export function ChatSidebar({
   );
 
   return (
-    <div className="w-64 max-w-[66.666667%] h-full bg-background border-r p-4 flex flex-col gap-4">
+    <div className="w-64 h-full bg-background border-r p-4 flex flex-col gap-4">
       <Button onClick={onNewChat} className="w-full gap-2">
         <PlusCircle className="h-4 w-4" />
         New Chat

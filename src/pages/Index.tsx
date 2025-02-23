@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -365,17 +364,15 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
       {showSidebar && (
-        <div className="max-w-[66.666667%]">
-          <ChatSidebar
-            sessions={sessions}
-            currentSessionId={currentSessionId}
-            onNewChat={createNewChat}
-            onSelectChat={setCurrentSessionId}
-            onDeleteChat={handleDeleteChat}
-            onArchiveChat={handleArchiveChat}
-            onUnarchiveChat={handleUnarchiveChat}
-          />
-        </div>
+        <ChatSidebar
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          onNewChat={createNewChat}
+          onSelectChat={setCurrentSessionId}
+          onDeleteChat={handleDeleteChat}
+          onArchiveChat={handleArchiveChat}
+          onUnarchiveChat={handleUnarchiveChat}
+        />
       )}
       <div className="flex-1 flex flex-col min-h-screen p-4 relative">
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2">

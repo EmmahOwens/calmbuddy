@@ -43,18 +43,21 @@ export type Database = {
       }
       chat_sessions: {
         Row: {
+          archived: boolean | null
           created_at: string | null
           id: string
           title: string
           updated_at: string | null
         }
         Insert: {
+          archived?: boolean | null
           created_at?: string | null
           id?: string
           title: string
           updated_at?: string | null
         }
         Update: {
+          archived?: boolean | null
           created_at?: string | null
           id?: string
           title?: string
