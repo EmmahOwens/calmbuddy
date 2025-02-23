@@ -60,7 +60,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
           }}
         />
       </div>
-      <Button type="submit" size="icon" className="neumorphic">
+      <Button type="submit" size="icon" className="neumorphic self-end">
         <SendIcon className="h-5 w-5 dark:text-neuro-purple text-black" />
       </Button>
     </form>
