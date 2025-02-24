@@ -27,9 +27,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "24px"; // Start with smaller initial height
+      textarea.style.height = "24px";
       const scrollHeight = textarea.scrollHeight;
-      // Limit maximum height to 200px
       textarea.style.height = `${Math.min(scrollHeight, 200)}px`;
     }
   };
@@ -47,14 +46,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 w-full">
-      <div className="flex-1 neumorphic-inset">
+      <div className="flex-1 neumorphic-inset relative">
         <Textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="border-none bg-transparent focus-visible:ring-0 min-h-[24px] py-1 px-3 resize-none overflow-y-auto"
+          className="absolute inset-0 border-none focus-visible:ring-0 resize-none overflow-y-auto bg-transparent py-1 px-3"
           style={{
             height: "24px"
           }}
