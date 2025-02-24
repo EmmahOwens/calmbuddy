@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -39,6 +38,7 @@ const Index = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -366,14 +366,25 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
 
+      {/* Desktop Menu Button - Only visible on desktop */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setShowDesktopSidebar(!showDesktopSidebar)}
+        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:flex"
+      >
+        {showDesktopSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
+      </Button>
+
       {/* Sidebar - Overlay on mobile, static on desktop */}
       <div 
         className={`
-          md:relative md:translate-x-0 md:w-64 
+          md:relative md:w-64 
           fixed md:block
           left-0 top-0 h-full z-40 
-          transition-transform duration-300 
+          transition-all duration-300 
           ${showSidebar ? 'translate-x-0' : '-translate-x-full'}
+          ${showDesktopSidebar ? 'md:translate-x-0 md:w-64' : 'md:translate-x-0 md:w-0'}
         `}
       >
         <ChatSidebar
