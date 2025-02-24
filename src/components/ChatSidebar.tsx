@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MessageSquare, MoreVertical, Archive, Trash2 } from "lucide-react";
+import { PlusCircle, MessageSquare, MoreVertical, Archive, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 interface ChatSession {
   id: string;
@@ -42,6 +43,8 @@ export function ChatSidebar({
   onArchiveChat,
   onUnarchiveChat
 }: ChatSidebarProps) {
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+
   const handleDelete = (sessionId: string) => {
     if (confirm("Are you sure you want to delete this chat? This action cannot be undone.")) {
       onDeleteChat(sessionId);
@@ -70,68 +73,61 @@ export function ChatSidebar({
   );
 
   const ChatList = ({ sessions, label }: { sessions: ChatSession[], label: string }) => (
-    <div>
-      {sessions.length > 0 && (
-        <>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-2 px-2">{label}</h2>
-          <div className="space-y-2 mb-4">
-            {sessions.map((session) => (
-              <ContextMenu key={session.id}>
-                <ContextMenuTrigger className="block w-full touch-none">
-                  <div
-                    className={cn(
-                      "w-full text-left p-3 rounded-lg flex items-center gap-3 hover:bg-accent transition-colors group",
-                      currentSessionId === session.id && "bg-accent"
-                    )}
+    <div className="space-y-2">
+      {sessions.map((session) => (
+        <ContextMenu key={session.id}>
+          <ContextMenuTrigger className="block w-full touch-none">
+            <div
+              className={cn(
+                "w-full text-left p-3 rounded-lg flex items-center gap-3 hover:bg-accent transition-colors group",
+                currentSessionId === session.id && "bg-accent"
+              )}
+            >
+              <button
+                onClick={() => onSelectChat(session.id)}
+                className="flex-1 flex items-center gap-3 min-w-0"
+              >
+                <MessageSquare className="h-4 w-4 shrink-0" />
+                <div className="flex-1 overflow-hidden">
+                  <p className="truncate text-sm">{session.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(session.updated_at), { addSuffix: true })}
+                  </p>
+                </div>
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <button
-                      onClick={() => onSelectChat(session.id)}
-                      className="flex-1 flex items-center gap-3 min-w-0"
-                    >
-                      <MessageSquare className="h-4 w-4 shrink-0" />
-                      <div className="flex-1 overflow-hidden">
-                        <p className="truncate text-sm">{session.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(session.updated_at), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => handleDelete(session.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => session.archived ? onUnarchiveChat(session.id) : onArchiveChat(session.id)}
-                        >
-                          <Archive className="mr-2 h-4 w-4" />
-                          {session.archived ? 'Unarchive' : 'Archive'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent>
-                  <ChatActions session={session} />
-                </ContextMenuContent>
-              </ContextMenu>
-            ))}
-          </div>
-        </>
-      )}
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => handleDelete(session.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => session.archived ? onUnarchiveChat(session.id) : onArchiveChat(session.id)}
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    {session.archived ? 'Unarchive' : 'Archive'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ChatActions session={session} />
+          </ContextMenuContent>
+        </ContextMenu>
+      ))}
     </div>
   );
 
@@ -142,8 +138,27 @@ export function ChatSidebar({
         New Chat
       </Button>
       <div className="flex-1 overflow-y-auto">
-        <ChatList sessions={activeSessions} label="Active Chats" />
-        <ChatList sessions={archivedSessions} label="Archived Chats" />
+        <div className="mb-4">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2 px-2">Active Chats</h2>
+          <ChatList sessions={activeSessions} label="Active Chats" />
+        </div>
+        
+        {archivedSessions.length > 0 && (
+          <div>
+            <button
+              onClick={() => setIsArchiveOpen(!isArchiveOpen)}
+              className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-2 px-2 w-full hover:text-foreground transition-colors"
+            >
+              {isArchiveOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              Archived Chats ({archivedSessions.length})
+            </button>
+            {isArchiveOpen && (
+              <div className="pl-2">
+                <ChatList sessions={archivedSessions} label="Archived Chats" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
