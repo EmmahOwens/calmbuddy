@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -38,7 +39,6 @@ const Index = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [showDesktopSidebar, setShowDesktopSidebar] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -355,38 +355,16 @@ const Index = () => {
   };
 
   return (
-    <div className="flex min-h-screen relative">
-      {/* Mobile Menu Button - Only visible on mobile */}
+    <div className="flex h-screen relative">
       <Button
         variant="ghost"
         size="icon"
         onClick={() => setShowSidebar(!showSidebar)}
-        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200 md:hidden"
+        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200"
       >
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
-
-      {/* Desktop Menu Button - Only visible on desktop */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setShowDesktopSidebar(!showDesktopSidebar)}
-        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200 hidden md:flex"
-      >
-        {showDesktopSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
-      </Button>
-
-      {/* Sidebar - Overlay on mobile, static on desktop */}
-      <div 
-        className={`
-          md:relative md:w-64 
-          fixed md:block
-          left-0 top-0 h-full z-40 
-          transition-all duration-300 
-          ${showSidebar ? 'translate-x-0' : '-translate-x-full'}
-          ${showDesktopSidebar ? 'md:translate-x-0 md:w-64' : 'md:translate-x-0 md:w-0'}
-        `}
-      >
+      <div className={`fixed left-0 top-0 h-full z-40 transition-transform duration-300 ${showSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
         <ChatSidebar
           sessions={sessions}
           currentSessionId={currentSessionId}
@@ -397,32 +375,28 @@ const Index = () => {
           onUnarchiveChat={handleUnarchiveChat}
         />
       </div>
-
-      {/* Main Chat Area - Centered on desktop */}
-      <div className="flex-1 flex justify-center">
-        <div className="w-full max-w-4xl flex flex-col min-h-screen p-4 relative">
-          <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-            <ChatSettings />
-            <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message.content}
-                isBot={message.isBot}
-              />
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
-                  <p className="text-muted-foreground">Thinking...</p>
-                </div>
-              </div>
-            )}
-          </div>
-          <ChatInput onSend={handleSend} />
+      <div className="flex-1 flex flex-col min-h-screen p-4 relative">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <ChatSettings />
+          <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
         </div>
+        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
+          {messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message.content}
+              isBot={message.isBot}
+            />
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
+                <p className="text-muted-foreground">Thinking...</p>
+              </div>
+            </div>
+          )}
+        </div>
+        <ChatInput onSend={handleSend} />
       </div>
     </div>
   );
