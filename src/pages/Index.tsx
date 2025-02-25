@@ -369,13 +369,13 @@ const Index = () => {
       <div 
         className={`
           md:relative md:block
-          fixed left-0 top-0 h-full z-40 
+          fixed left-0 top-0 min-h-screen h-full z-40 
           transition-all duration-300 ease-in-out
           overflow-hidden
           ${showSidebar ? 'w-64 translate-x-0' : 'w-0 -translate-x-full md:translate-x-0'}
         `}
       >
-        <div className="w-64">
+        <div className="w-64 h-screen">
           <ChatSidebar
             sessions={sessions}
             currentSessionId={currentSessionId}
