@@ -370,19 +370,22 @@ const Index = () => {
         className={`
           md:relative md:block
           fixed left-0 top-0 h-full z-40 
-          transition-transform duration-300 
-          ${showSidebar ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-0'}
+          transition-all duration-300 ease-in-out
+          overflow-hidden
+          ${showSidebar ? 'w-64 translate-x-0' : 'w-0 -translate-x-full md:translate-x-0'}
         `}
       >
-        <ChatSidebar
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onNewChat={createNewChat}
-          onSelectChat={setCurrentSessionId}
-          onDeleteChat={handleDeleteChat}
-          onArchiveChat={handleArchiveChat}
-          onUnarchiveChat={handleUnarchiveChat}
-        />
+        <div className="w-64">
+          <ChatSidebar
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onNewChat={createNewChat}
+            onSelectChat={setCurrentSessionId}
+            onDeleteChat={handleDeleteChat}
+            onArchiveChat={handleArchiveChat}
+            onUnarchiveChat={handleUnarchiveChat}
+          />
+        </div>
       </div>
 
       {/* Main Chat Area - Centered with large margins on desktop */}
