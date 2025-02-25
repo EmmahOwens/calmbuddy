@@ -45,16 +45,17 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 w-full">
-      <div className="flex-1 neumorphic-inset min-h-[40px] flex items-center">
+      <div className="flex-1 relative neumorphic-inset min-h-[40px] flex items-center">
         <Textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="w-full border-none focus-visible:ring-0 resize-none overflow-y-auto bg-transparent py-1 px-3"
+          className="absolute inset-0 border-none focus-visible:ring-0 resize-none bg-transparent py-2 px-3"
           style={{
-            height: "24px"
+            height: "24px",
+            minHeight: "24px"
           }}
         />
       </div>
