@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -8,7 +9,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
-import VoiceInterface from "@/components/VoiceInterface";
 
 interface Message {
   id: string;
@@ -39,14 +39,7 @@ const Index = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const { toast } = useToast();
-  const [settings] = useState(() => {
-    const savedSettings = localStorage.getItem("chatSettings");
-    return savedSettings ? JSON.parse(savedSettings) : {
-      selectedVoice: "alloy"
-    };
-  });
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -372,6 +365,7 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
 
+      {/* Sidebar - Overlay on mobile, pushes content on desktop */}
       <div 
         className={`
           md:relative md:block
@@ -394,6 +388,7 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Main Chat Area - Centered with large margins on desktop */}
       <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
         <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
           <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -416,14 +411,7 @@ const Index = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-2 items-end">
-            <ChatInput onSend={handleSend} />
-            <VoiceInterface
-              selectedVoice={settings.selectedVoice}
-              onSpeakingChange={setIsAiSpeaking}
-              onMessage={handleSend}
-            />
-          </div>
+          <ChatInput onSend={handleSend} />
         </div>
       </div>
     </div>

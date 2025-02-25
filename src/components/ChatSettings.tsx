@@ -13,13 +13,11 @@ import { Settings } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ChatSettings {
   aiResponseLength: number;
   showTimestamps: boolean;
   useFriendlyTone: boolean;
-  selectedVoice: string;
 }
 
 export function ChatSettings() {
@@ -29,7 +27,6 @@ export function ChatSettings() {
       aiResponseLength: 150,
       showTimestamps: true,
       useFriendlyTone: true,
-      selectedVoice: "alloy",
     };
   });
 
@@ -38,14 +35,6 @@ export function ChatSettings() {
     setSettings(updatedSettings);
     localStorage.setItem("chatSettings", JSON.stringify(updatedSettings));
   };
-
-  const voices = [
-    { id: "alloy", name: "Alloy (Neutral)", description: "Versatile, balanced voice" },
-    { id: "echo", name: "Echo (Male)", description: "Deep, resonant male voice" },
-    { id: "fable", name: "Fable (Young)", description: "Youthful, animated voice" },
-    { id: "onyx", name: "Onyx (Male)", description: "Strong, authoritative male voice" },
-    { id: "nova", name: "Nova (Female)", description: "Warm, friendly female voice" },
-  ];
 
   return (
     <Dialog>
@@ -66,27 +55,6 @@ export function ChatSettings() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label>Voice Selection</Label>
-            <Select
-              value={settings.selectedVoice}
-              onValueChange={(value) => updateSettings({ selectedVoice: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a voice" />
-              </SelectTrigger>
-              <SelectContent>
-                {voices.map((voice) => (
-                  <SelectItem key={voice.id} value={voice.id}>
-                    <div className="flex flex-col">
-                      <span>{voice.name}</span>
-                      <span className="text-xs text-muted-foreground">{voice.description}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="grid gap-2">
             <Label htmlFor="response-length">AI Response Length</Label>
             <div className="flex items-center gap-4">
