@@ -364,7 +364,16 @@ const Index = () => {
       >
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
-      <div className={`fixed left-0 top-0 h-full z-40 transition-transform duration-300 ${showSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+
+      {/* Sidebar - Overlay on mobile, pushes content on desktop */}
+      <div 
+        className={`
+          md:relative md:block
+          fixed left-0 top-0 h-full z-40 
+          transition-transform duration-300 
+          ${showSidebar ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-0'}
+        `}
+      >
         <ChatSidebar
           sessions={sessions}
           currentSessionId={currentSessionId}
@@ -375,28 +384,32 @@ const Index = () => {
           onUnarchiveChat={handleUnarchiveChat}
         />
       </div>
-      <div className="flex-1 flex flex-col min-h-screen p-4 relative">
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-          <ChatSettings />
-          <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
-        </div>
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message.content}
-              isBot={message.isBot}
-            />
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
-                <p className="text-muted-foreground">Thinking...</p>
+
+      {/* Main Chat Area - Centered with large margins on desktop */}
+      <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
+        <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+            <ChatSettings />
+            <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
+            {messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                message={message.content}
+                isBot={message.isBot}
+              />
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
+                  <p className="text-muted-foreground">Thinking...</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+          <ChatInput onSend={handleSend} />
         </div>
-        <ChatInput onSend={handleSend} />
       </div>
     </div>
   );
