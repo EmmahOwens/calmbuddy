@@ -4,6 +4,16 @@ import { PlusCircle, MessageSquare, MoreVertical, Archive, Trash2, ChevronDown, 
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
@@ -44,10 +54,16 @@ export function ChatSidebar({
   onUnarchiveChat
 }: ChatSidebarProps) {
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<ChatSession | null>(null);
 
-  const handleDelete = (sessionId: string) => {
-    if (confirm("Are you sure you want to delete this chat? This action cannot be undone.")) {
-      onDeleteChat(sessionId);
+  const handleDelete = (session: ChatSession) => {
+    setSessionToDelete(session);
+  };
+
+  const confirmDelete = () => {
+    if (sessionToDelete) {
+      onDeleteChat(sessionToDelete.id);
+      setSessionToDelete(null);
     }
   };
 
@@ -58,7 +74,7 @@ export function ChatSidebar({
     <>
       <ContextMenuItem
         className="text-destructive focus:text-destructive"
-        onClick={() => handleDelete(session.id)}
+        onClick={() => handleDelete(session)}
       >
         <Trash2 className="mr-2 h-4 w-4" />
         Delete
@@ -108,7 +124,7 @@ export function ChatSidebar({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => handleDelete(session.id)}
+                    onClick={() => handleDelete(session)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
@@ -160,6 +176,33 @@ export function ChatSidebar({
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!sessionToDelete} onOpenChange={() => setSessionToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Chat</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this chat?
+              <div className="mt-2 p-3 rounded-md bg-muted">
+                <p className="font-medium">{sessionToDelete?.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {sessionToDelete && formatDistanceToNow(new Date(sessionToDelete.updated_at), { addSuffix: true })}
+                </p>
+              </div>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
