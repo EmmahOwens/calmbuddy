@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { ChatSidebar } from "@/components/ChatSidebar";
@@ -8,7 +7,7 @@ import { ChatSettings } from "@/components/ChatSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { PanelLeftOpen, PanelLeftClose, ArrowDown, ArrowUp } from "lucide-react";
 
 interface Message {
   id: string;
@@ -38,8 +37,35 @@ const Index = () => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false); // Changed to false
+  const [showSidebar, setShowSidebar] = useState(false);
   const { toast } = useToast();
+  
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [showScrollUp, setShowScrollUp] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToTop = () => {
+    chatContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
+    const isAtTop = scrollTop < 50;
+
+    setShowScrollDown(!isAtBottom);
+    setShowScrollUp(!isAtTop && scrollTop > 100);
+  };
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -164,6 +190,7 @@ const Index = () => {
 
     try {
       setIsLoading(true);
+      scrollToBottom();
 
       const userMessage = {
         content: message,
@@ -269,15 +296,12 @@ const Index = () => {
       
       if (currentSessionId === sessionId) {
         setMessages([]);
-        // Find the next available session
         const remainingSessions = sessions.filter(session => session.id !== sessionId);
         
         if (remainingSessions.length > 0) {
-          // If there are remaining sessions, select the first one
           const nextSession = remainingSessions[0];
           setCurrentSessionId(nextSession.id);
         } else {
-          // If no sessions remain, create a new one
           await createNewChat();
         }
       }
@@ -365,7 +389,6 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
 
-      {/* Sidebar - Overlay on mobile, pushes content on desktop */}
       <div 
         className={`
           md:relative md:block
@@ -388,14 +411,40 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Chat Area - Centered with large margins on desktop */}
       <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
         <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
           <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
             <ChatSettings />
             <ThemeToggle className="shadow-lg hover:shadow-xl transition-shadow duration-200" />
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16">
+
+          {showScrollUp && (
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={scrollToTop}
+              className="fixed bottom-32 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 opacity-80 hover:opacity-100"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {showScrollDown && (
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={scrollToBottom}
+              className="fixed bottom-20 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 opacity-80 hover:opacity-100"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+          )}
+
+          <div 
+            className="flex-1 overflow-y-auto space-y-4 mb-4 pt-16"
+            ref={chatContainerRef}
+            onScroll={handleScroll}
+          >
             {messages.map((message) => (
               <ChatMessage
                 key={message.id}
@@ -410,6 +459,7 @@ const Index = () => {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
           <ChatInput onSend={handleSend} />
         </div>
