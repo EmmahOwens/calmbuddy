@@ -18,7 +18,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
       onSend(message);
       setMessage("");
       if (textareaRef.current) {
-        textareaRef.current.style.height = "24px";
+        textareaRef.current.style.height = "40px";
       }
     }
   };
@@ -26,12 +26,16 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "24px";
-      const scrollHeight = textarea.scrollHeight;
-      textarea.style.height = `${Math.min(scrollHeight, 200)}px`;
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = "auto";
+      // Calculate the new height with a max of 200px
+      const newHeight = Math.min(textarea.scrollHeight, 200);
+      // Set the new height with a minimum of 40px
+      textarea.style.height = `${Math.max(40, newHeight)}px`;
     }
   };
 
+  // Adjust height whenever message changes
   useEffect(() => {
     adjustTextareaHeight();
   }, [message]);
@@ -45,18 +49,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 w-full">
-      <div className="flex-1 relative neumorphic-inset min-h-[40px] flex items-center">
+      <div className="flex-1 relative neumorphic-inset">
         <Textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
-          className="absolute inset-0 border-none focus-visible:ring-0 resize-none bg-transparent py-2 px-3"
-          style={{
-            height: "24px",
-            minHeight: "24px"
-          }}
+          className="absolute inset-0 border-none focus-visible:ring-0 resize-none bg-transparent py-2 px-3 min-h-[40px] overflow-hidden"
         />
       </div>
       <Button type="submit" size="icon" className="neumorphic self-end">

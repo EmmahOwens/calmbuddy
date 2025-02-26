@@ -42,11 +42,14 @@ const Index = () => {
   
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [showScrollUp, setShowScrollUp] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   const scrollToTop = () => {
@@ -65,6 +68,7 @@ const Index = () => {
 
     setShowScrollDown(!isAtBottom);
     setShowScrollUp(!isAtTop && scrollTop > 100);
+    setShouldAutoScroll(isAtBottom);
   };
 
   useEffect(() => {
@@ -190,6 +194,7 @@ const Index = () => {
 
     try {
       setIsLoading(true);
+      setShouldAutoScroll(true);
       scrollToBottom();
 
       const userMessage = {
@@ -378,6 +383,16 @@ const Index = () => {
     }
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom();
+    }
+  }, [isLoading]);
+
   return (
     <div className="flex h-screen relative">
       <Button
@@ -433,7 +448,10 @@ const Index = () => {
             <Button
               variant="secondary"
               size="icon"
-              onClick={scrollToBottom}
+              onClick={() => {
+                setShouldAutoScroll(true);
+                scrollToBottom();
+              }}
               className="fixed bottom-20 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 opacity-80 hover:opacity-100"
             >
               <ArrowDown className="h-4 w-4" />
