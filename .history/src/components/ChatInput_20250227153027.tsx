@@ -11,7 +11,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = (e: React.FormEvent | React.KeyboardEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       onSend(message);
@@ -22,18 +22,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
+      // Reset height to auto to correctly calculate scrollHeight.
       textarea.style.height = "auto";
+      // Calculate new height with max of 200px.
       const newHeight = Math.min(textarea.scrollHeight, 200);
+      // Set the new height with a minimum of 40px.
       textarea.style.height = `${Math.max(40, newHeight)}px`;
     }
   };
@@ -43,13 +39,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
   }, [message]);
 
   return (
+    // Parent container absolutely positioned at the bottom
     <div
       style={{
         position: "absolute",
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 10,
+        zIndex: 10, // Ensures it overlays content above if needed.
       }}
     >
       <form onSubmit={handleSubmit} style={{ display: "flex", alignItems: "flex-end" }}>
@@ -57,7 +54,6 @@ export function ChatInput({ onSend }: ChatInputProps) {
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
           placeholder="Type your message..."
           style={{
             resize: "none",
@@ -65,10 +61,9 @@ export function ChatInput({ onSend }: ChatInputProps) {
             minHeight: "40px",
             maxHeight: "200px",
           }}
-          className="neumorphic" // Added neumorphic design
         />
-        <Button type="submit" className="neumorphic">
-          <SendIcon className="text-black dark:text-purple-500" />
+        <Button type="submit">
+          <SendIcon />
         </Button>
       </form>
     </div>

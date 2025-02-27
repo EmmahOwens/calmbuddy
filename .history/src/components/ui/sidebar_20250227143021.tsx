@@ -261,12 +261,7 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, open } = useSidebar();
-
-  // Adjust the button's horizontal position based on the sidebar state.
-  const positionClasses = open
-    ? "absolute top-4 right-[-20px] transition-all" // When sidebar is open.
-    : "absolute top-4 right-[-5px] transition-all";  // When sidebar is closed.
+  const { toggleSidebar } = useSidebar()
 
   return (
     <Button
@@ -274,19 +269,19 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", positionClasses, className)}
+      className={cn("h-7 w-7", className)}
       onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
+        onClick?.(event)
+        toggleSidebar()
       }}
       {...props}
     >
       <PanelLeft />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
-  );
-});
-SidebarTrigger.displayName = "SidebarTrigger";
+  )
+})
+SidebarTrigger.displayName = "SidebarTrigger"
 
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
