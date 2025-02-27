@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, PanelLeftClose } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -109,6 +109,40 @@ const SidebarProvider = React.forwardRef<
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
+
+    // Adds swipe gesture to toggle the sidebar on mobile.
+    React.useEffect(() => {
+      if (!isMobile) return
+
+      let touchStartX = 0
+      let touchEndX = 0
+
+      const handleTouchStart = (e: TouchEvent) => {
+        touchStartX = e.changedTouches[0].screenX
+      }
+
+      const handleTouchEnd = (e: TouchEvent) => {
+        touchEndX = e.changedTouches[0].screenX
+        const deltaX = touchEndX - touchStartX
+        const swipeThreshold = 50
+        // Swipe right to open sidebar
+        if (deltaX > swipeThreshold && !openMobile) {
+          setOpenMobile(true)
+        }
+        // Swipe left to close sidebar
+        else if (deltaX < -swipeThreshold && openMobile) {
+          setOpenMobile(false)
+        }
+      }
+
+      document.addEventListener("touchstart", handleTouchStart)
+      document.addEventListener("touchend", handleTouchEnd)
+
+      return () => {
+        document.removeEventListener("touchstart", handleTouchStart)
+        document.removeEventListener("touchend", handleTouchEnd)
+      }
+    }, [isMobile, openMobile, setOpenMobile])
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
@@ -257,38 +291,7 @@ const Sidebar = React.forwardRef<
 )
 Sidebar.displayName = "Sidebar"
 
-const SidebarTrigger = React.forwardRef<
-  React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, open } = useSidebar();
-
-  // When the sidebar is open, place the button immediately to its right.
-  // When closed, position it with a small offset from the left edge.
-  const styleOverrides = {
-    left: open ? SIDEBAR_WIDTH : "0.5rem",
-  };
-
-  return (
-    <Button
-      ref={ref}
-      data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
-      style={styleOverrides}
-      className={cn("absolute top-4 transition-all", className)}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
-});
-SidebarTrigger.displayName = "SidebarTrigger";
+// Removed duplicate SidebarTrigger declaration
 
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
@@ -763,6 +766,5 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
   useSidebar,
 }
