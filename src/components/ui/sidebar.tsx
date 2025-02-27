@@ -112,37 +112,42 @@ const SidebarProvider = React.forwardRef<
 
     // Adds swipe gesture to toggle the sidebar on mobile.
     React.useEffect(() => {
-      if (!isMobile) return
+      if (!isMobile) return;
 
-      let touchStartX = 0
-      let touchEndX = 0
+      let touchStartX = 0;
+      let touchCurrentX = 0;
+      const swipeThreshold = 50;
 
       const handleTouchStart = (e: TouchEvent) => {
-        touchStartX = e.changedTouches[0].screenX
-      }
+        touchStartX = e.touches[0].clientX;
+        touchCurrentX = touchStartX;
+      };
 
-      const handleTouchEnd = (e: TouchEvent) => {
-        touchEndX = e.changedTouches[0].screenX
-        const deltaX = touchEndX - touchStartX
-        const swipeThreshold = 50
-        // Swipe right to open sidebar
+      const handleTouchMove = (e: TouchEvent) => {
+        touchCurrentX = e.touches[0].clientX;
+      };
+
+      const handleTouchEnd = () => {
+        const deltaX = touchCurrentX - touchStartX;
         if (deltaX > swipeThreshold && !openMobile) {
-          setOpenMobile(true)
+          // Swipe right to open the sidebar
+          setOpenMobile(true);
+        } else if (deltaX < -swipeThreshold && openMobile) {
+          // Swipe left to close the sidebar
+          setOpenMobile(false);
         }
-        // Swipe left to close sidebar
-        else if (deltaX < -swipeThreshold && openMobile) {
-          setOpenMobile(false)
-        }
-      }
+      };
 
-      document.addEventListener("touchstart", handleTouchStart)
-      document.addEventListener("touchend", handleTouchEnd)
+      document.addEventListener("touchstart", handleTouchStart);
+      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchend", handleTouchEnd);
 
       return () => {
-        document.removeEventListener("touchstart", handleTouchStart)
-        document.removeEventListener("touchend", handleTouchEnd)
-      }
-    }, [isMobile, openMobile, setOpenMobile])
+        document.removeEventListener("touchstart", handleTouchStart);
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+      };
+    }, [isMobile, openMobile, setOpenMobile]);
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
