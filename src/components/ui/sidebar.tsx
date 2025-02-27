@@ -149,6 +149,45 @@ const SidebarProvider = React.forwardRef<
       };
     }, [isMobile, openMobile, setOpenMobile]);
 
+    // Adds swipe gesture to toggle the sidebar on mobile with passive listeners.
+    React.useEffect(() => {
+      if (!isMobile) return;
+
+      let touchStartX = 0;
+      let touchEndX = 0;
+      const swipeThreshold = 50; // pixels
+
+      const handleTouchStart = (e: TouchEvent) => {
+        touchStartX = e.touches[0].clientX;
+      };
+
+      const handleTouchMove = (e: TouchEvent) => {
+        touchEndX = e.touches[0].clientX;
+      };
+
+      const handleTouchEnd = () => {
+        const deltaX = touchEndX - touchStartX;
+        if (deltaX > swipeThreshold && !openMobile) {
+          // Swipe right to open sidebar.
+          setOpenMobile(true);
+        } else if (deltaX < -swipeThreshold && openMobile) {
+          // Swipe left to close sidebar.
+          setOpenMobile(false);
+        }
+      };
+
+      // Using passive listeners.
+      document.addEventListener("touchstart", handleTouchStart, { passive: true });
+      document.addEventListener("touchmove", handleTouchMove, { passive: true });
+      document.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+      return () => {
+        document.removeEventListener("touchstart", handleTouchStart);
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+      };
+    }, [isMobile, openMobile, setOpenMobile]);
+
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
