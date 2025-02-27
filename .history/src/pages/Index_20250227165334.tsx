@@ -479,6 +479,10 @@ const Index = () => {
             <div ref={messagesEndRef} />
           </div>
           <ChatInput onSend={handleSend} />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          <ChatInput onSend={handleSend} />
         </div>
       </div>
     </div>

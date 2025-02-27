@@ -67,7 +67,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             maxHeight: "200px",
             flex: 1,
           }}
-          className="neumorphic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:focus-visible:ring-black focus-visible:ring-offset-2"
+          className="neumorphic focus:outline-none focus:ring-0" // remove focus outlines
         />
         <Button
           type="submit"
