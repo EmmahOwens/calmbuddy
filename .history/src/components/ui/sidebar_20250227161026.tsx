@@ -285,8 +285,6 @@ const SidebarTrigger = React.forwardRef<
     >
       <PanelLeft />
       <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
 });
 SidebarTrigger.displayName = "SidebarTrigger";
 
