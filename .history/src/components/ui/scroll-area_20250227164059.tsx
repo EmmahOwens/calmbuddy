@@ -20,44 +20,16 @@ const ScrollArea = React.forwardRef<
     if (scrollTimeout.current) {
       clearTimeout(scrollTimeout.current);
     }
-    setIsScrolling(true);
-    scrollTimeout.current = window.setTimeout(() => {
-      setIsScrolling(false);
-    }, 300);
-  };
-
-  return (
-    <ScrollAreaPrimitive.Root
-      ref={ref}
-      className={cn("group relative overflow-hidden", className)}
-      {...props}
-    >
-      <ScrollAreaPrimitive.Viewport
-        className="h-full w-full rounded-[inherit]"
-        onScroll={handleScroll}
-      >
-        {children}
-      </ScrollAreaPrimitive.Viewport>
-      <ScrollBar orientation="vertical" isScrolling={isScrolling} />
-      <ScrollBar orientation="horizontal" isScrolling={isScrolling} />
-      <ScrollAreaPrimitive.Corner />
-    </ScrollAreaPrimitive.Root>
-  );
-});
-ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
-  ScrollBarProps
->(({ className, orientation = "vertical", isScrolling, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
+>(({ className, orientation = "vertical", ...props }, ref) => (
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
     orientation={orientation}
     className={cn(
-      "flex touch-none select-none transition-opacity duration-300",
-      // When scrolling or on hover over the parent group, show the scrollbar.
-      (isScrolling && "opacity-100") ||
-        "opacity-0 group-hover:opacity-100",
+      "flex touch-none select-none transition-colors",
       orientation === "vertical" &&
         "h-full w-2.5 border-l border-l-transparent p-[1px]",
       orientation === "horizontal" &&
@@ -68,7 +40,7 @@ const ScrollBar = React.forwardRef<
   >
     <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
-));
-ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
+))
+ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
-export { ScrollArea, ScrollBar };
+export { ScrollArea, ScrollBar }

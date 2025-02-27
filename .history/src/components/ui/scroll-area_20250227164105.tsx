@@ -51,24 +51,3 @@ const ScrollBar = React.forwardRef<
   ScrollBarProps
 >(({ className, orientation = "vertical", isScrolling, ...props }, ref) => (
   <ScrollAreaPrimitive.ScrollAreaScrollbar
-    ref={ref}
-    orientation={orientation}
-    className={cn(
-      "flex touch-none select-none transition-opacity duration-300",
-      // When scrolling or on hover over the parent group, show the scrollbar.
-      (isScrolling && "opacity-100") ||
-        "opacity-0 group-hover:opacity-100",
-      orientation === "vertical" &&
-        "h-full w-2.5 border-l border-l-transparent p-[1px]",
-      orientation === "horizontal" &&
-        "h-2.5 flex-col border-t border-t-transparent p-[1px]",
-      className
-    )}
-    {...props}
-  >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
-  </ScrollAreaPrimitive.ScrollAreaScrollbar>
-));
-ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
-
-export { ScrollArea, ScrollBar };

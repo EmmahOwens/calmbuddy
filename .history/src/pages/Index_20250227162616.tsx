@@ -437,7 +437,7 @@ const Index = () => {
               variant="secondary"
               size="icon"
               onClick={scrollToTop}
-              className="fixed bottom-32 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-opacity duration-200 opacity-80 hover:opacity-100"
+              className="fixed bottom-32 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 opacity-80 hover:opacity-100"
             >
               <ArrowUp className="h-4 w-4" />
             </Button>
@@ -451,7 +451,7 @@ const Index = () => {
                 setShouldAutoScroll(true);
                 scrollToBottom();
               }}
-              className="fixed bottom-20 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-opacity duration-200 opacity-80 hover:opacity-100"
+              className="fixed bottom-20 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 opacity-80 hover:opacity-100"
             >
               <ArrowDown className="h-4 w-4" />
             </Button>
