@@ -77,6 +77,12 @@
 
 .neumorphic {
   @apply bg-neuro-light dark:bg-neuro-dark rounded-xl shadow-[5px_5px_10px_rgba(163,177,198,0.6),-5px_-5px_10px_rgba(255,255,255,0.5)] dark:shadow-[5px_5px_10px_rgba(0,0,0,0.6),-5px_-5px_10px_rgba(255,255,255,0.1)];
+  border-radius: 12px;
+  box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff;
+}
+
+.dark .neumorphic {
+  box-shadow: 8px 8px 16px #1a1a1a, -8px -8px 16px #3e3e3e;
 }
 
 .neumorphic-inset {
@@ -90,7 +96,18 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Light mode background */
+.bg-light-bg {
+  background-color: #e0e0e0;
+}
+
+/* Dark mode background */
+.bg-dark-bg {
+  background-color: #2e2e2e;
 }
