@@ -263,10 +263,9 @@ const SidebarTrigger = React.forwardRef<
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar, open } = useSidebar();
 
-  // When the sidebar is open, place the button immediately to its right.
-  // When closed, position it with a small offset from the left edge.
+  // Use inline styles to set the left offset.
   const styleOverrides = {
-    left: open ? SIDEBAR_WIDTH : "0.5rem",
+    left: open ? SIDEBAR_WIDTH : "-2rem",
   };
 
   return (
@@ -275,6 +274,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
+      // Ensure the button is absolutely positioned relative to its container.
       style={styleOverrides}
       className={cn("absolute top-4 transition-all", className)}
       onClick={(event) => {
