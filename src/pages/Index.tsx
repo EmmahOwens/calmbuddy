@@ -404,13 +404,12 @@ const Index = () => {
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
 
-      <div 
+      <div
         className={`
-          md:relative md:block
           fixed left-0 top-0 min-h-screen h-full z-40 
           transition-all duration-300 ease-in-out
           overflow-hidden
-          ${showSidebar ? 'w-64 translate-x-0' : 'w-0 -translate-x-full md:translate-x-0'}
+          ${showSidebar ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'}
         `}
       >
         <div className="w-64 h-screen">
