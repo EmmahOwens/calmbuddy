@@ -111,3 +111,16 @@
 .bg-dark-bg {
   background-color: #2e2e2e;
 }
+
+.hover\:bg-sidebar-accent:hover {
+  background-color: theme('colors.neuro.teal'); /* Using new teal value */
+}
+.hover\:text-sidebar-accent-foreground:hover {
+  color: theme('colors.primary-foreground'); /* Adjust as needed */
+}
+.active\:bg-sidebar-accent:active {
+  background-color: theme('colors.neuro.teal'); 
+}
+.active\:text-sidebar-accent-foreground:active {
+  color: theme('colors.primary-foreground'); 
+}

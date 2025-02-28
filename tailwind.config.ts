@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,10 +17,8 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
+        primary: "#38b2ac",
+        "primary-foreground": "#F0FAFF",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -49,8 +46,8 @@ export default {
         neuro: {
           light: "#F0F4F8",
           dark: "#1A1F2C",
-          purple: "#9b87f5",
-          "purple-dark": "#7E69AB",
+          teal: "#38b2ac",
+          "teal-dark": "#2C7A7B",
           lavender: "#E5DEFF",
         },
       },
