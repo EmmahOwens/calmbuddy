@@ -65,6 +65,42 @@ export type Database = {
         }
         Relationships: []
       }
+      models: {
+        Row: {
+          accuracy: number
+          algorithm: string
+          created_at: string
+          dataset_name: string
+          id: string
+          name: string
+          neural_network_architecture: Json | null
+          parameters: Json | null
+          type: string
+        }
+        Insert: {
+          accuracy: number
+          algorithm: string
+          created_at?: string
+          dataset_name: string
+          id?: string
+          name: string
+          neural_network_architecture?: Json | null
+          parameters?: Json | null
+          type: string
+        }
+        Update: {
+          accuracy?: number
+          algorithm?: string
+          created_at?: string
+          dataset_name?: string
+          id?: string
+          name?: string
+          neural_network_architecture?: Json | null
+          parameters?: Json | null
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

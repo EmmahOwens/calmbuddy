@@ -45,6 +45,53 @@ const Index = () => {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const SWIPE_THRESHOLD = 50;
+  const EDGE_THRESHOLD = 30;
+
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const swipeDistance = touchEndX.current - touchStartX.current;
+    const isLeftEdgeSwipe = touchStartX.current < EDGE_THRESHOLD;
+    
+    if (swipeDistance > SWIPE_THRESHOLD && isLeftEdgeSwipe && !showSidebar) {
+      setShowSidebar(true);
+    }
+    
+    if (swipeDistance < -SWIPE_THRESHOLD && showSidebar) {
+      setShowSidebar(false);
+    }
+    
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  useEffect(() => {
+    const container = mainContainerRef.current;
+    if (container) {
+      container.addEventListener('touchstart', handleTouchStart, { passive: true });
+      container.addEventListener('touchmove', handleTouchMove, { passive: true });
+      container.addEventListener('touchend', handleTouchEnd, { passive: true });
+      
+      return () => {
+        container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchmove', handleTouchMove);
+        container.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [showSidebar]);
 
   const scrollToBottom = () => {
     if (shouldAutoScroll) {
@@ -394,7 +441,7 @@ const Index = () => {
   }, [isLoading]);
 
   return (
-    <div className="flex h-screen relative">
+    <div className="flex h-screen relative" ref={mainContainerRef}>
       <Button
         variant="ghost"
         size="icon"
