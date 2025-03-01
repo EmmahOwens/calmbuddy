@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,6 +94,34 @@
   @apply transition-all duration-300 ease-in-out;
 }
 
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(163, 177, 198, 0.3);
+  border-radius: 20px;
+  border: 2px solid transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(163, 177, 198, 0.5);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide scrollbar by default */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -100,6 +129,18 @@
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* Show scrollbar on hover and when scrolling */
+.hover:scrollbar-show:hover::-webkit-scrollbar,
+.hover:scrollbar-show:active::-webkit-scrollbar {
+  display: block;
+}
+
+.hover:scrollbar-show:hover,
+.hover:scrollbar-show:active {
+  -ms-overflow-style: auto;  /* IE and Edge */
+  scrollbar-width: thin;  /* Firefox */
 }
 
 /* Light mode background */

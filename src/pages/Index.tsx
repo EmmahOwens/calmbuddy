@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose, ArrowDown, ArrowUp } from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const { toast } = useToast();
+  const isMobile = useMobile();
   
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -79,6 +81,8 @@ const Index = () => {
   };
 
   useEffect(() => {
+    if (!isMobile) return;
+    
     const container = mainContainerRef.current;
     if (container) {
       container.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -91,7 +95,7 @@ const Index = () => {
         container.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, [showSidebar]);
+  }, [showSidebar, isMobile]);
 
   const scrollToBottom = () => {
     if (shouldAutoScroll) {
@@ -507,7 +511,7 @@ const Index = () => {
           <div 
             ref={chatContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto space-y-4 pb-24 pt-16"
+            className="flex-1 overflow-y-auto custom-scrollbar scrollbar-hide hover:scrollbar-show space-y-4 pb-24 pt-16"
           >
             {messages.map((message) => (
               <ChatMessage
