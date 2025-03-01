@@ -11,8 +11,8 @@ export function ChatMessage({ message, isBot, image }: ChatMessageProps) {
     <div className={cn("flex w-full gap-2 py-2", isBot ? "justify-start" : "justify-end")}>
       <div
         className={cn(
-          "max-w-[80%] p-4 message-transition animate-fade-in rounded-lg",
-          "bg-gray-200 dark:bg-gray-800"
+          "neumorphic max-w-[80%] p-4 message-transition animate-fade-in",
+          isBot ? "rounded-tr-2xl" : "rounded-tl-2xl"
         )}
       >
         {image && (

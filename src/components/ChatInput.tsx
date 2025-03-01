@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +44,6 @@ export function ChatInput({ onSend }: ChatInputProps) {
   }, [message]);
 
   return (
-    // Floating container; adjust bottom positioning as needed.
     <div
       style={{
         position: "absolute",
@@ -67,14 +67,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
             maxHeight: "200px",
             flex: 1,
           }}
-          className="neumorphic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:focus-visible:ring-black focus-visible:ring-offset-2"
+          className="neumorphic-box rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:focus-visible:ring-black focus-visible:ring-offset-2"
         />
         <Button
           type="submit"
-          className="neumorphic rounded-full"
+          className="neumorphic-button rounded-full hover:translate-y-[-2px] transition-all duration-300"
           size="icon"
         >
-          <SendIcon className="text-black dark:text-purple-500" />
+          <SendIcon className="text-primary dark:text-primary" />
         </Button>
       </form>
     </div>
