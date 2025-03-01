@@ -17,8 +17,8 @@ export function ChatMessage({ message, isBot, image }: ChatMessageProps) {
     >
       <div
         className={cn(
-          "neumorphic max-w-[80%] p-4 message-transition animate-fade-in",
-          isBot ? "rounded-tr-2xl" : "rounded-tl-2xl"
+          "neumorphic-box max-w-[80%] p-4 rounded-2xl message-transition animate-fade-in",
+          isBot ? "rounded-bl-sm" : "rounded-br-sm"
         )}
       >
         {image && (

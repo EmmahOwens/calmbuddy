@@ -19,7 +19,7 @@ export function PromptSuggestions({
         <Button
           key={index}
           variant="outline"
-          className="text-sm rounded-full px-4 py-2 h-auto text-left neumorphic hover:bg-accent transition-all"
+          className="text-sm rounded-full px-4 py-2 h-auto text-left neumorphic-button hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]"
           onClick={() => onSuggestionClick(suggestion)}
         >
           {suggestion}

@@ -1,5 +1,13 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.4.0';
+
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,123 +21,123 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, currentState } = await req.json();
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const { messages = [], currentState = "initial" } = await req.json();
+    console.log(`Generating prompts for state: ${currentState}`);
+    
+    // Initial conversation suggestions (statements rather than questions)
+    const initialSuggestions = [
+      "I've been feeling anxious lately.",
+      "My work stress is becoming overwhelming.",
+      "I struggle with setting boundaries with others.",
+      "Sometimes I feel disconnected from people around me.",
+      "I have trouble sleeping most nights."
+    ];
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    // If we don't have an OpenAI API key or if this is just initial prompts
+    // return default suggestions
+    if (!openAIApiKey || currentState === "initial") {
+      console.log("Using default initial suggestions");
+      return new Response(
+        JSON.stringify({ suggestions: initialSuggestions }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log('Generating prompt suggestions, state:', currentState);
+    // For ongoing conversations, generate context-aware prompts
+    const systemPrompt = `
+      You are a mental health companion chatbot.
+      Generate 3-4 statements (NOT questions) that a user might say to continue a conversation about their mental health.
+      These should be first-person statements that a user would type, like "I've been feeling stressed about work lately."
+      Make them relevant to the current conversation context if provided.
+      Keep statements brief (under 8 words) and natural.
+      Focus on common mental health concerns like anxiety, stress, mood, relationships, etc.
+      Provide only the statements with no additional text.
+    `;
 
-    // Create system message based on current state
-    const systemPrompt = currentState === "initial" 
-      ? "You are a helpful mental health companion chatbot. Generate 3-5 conversation starter questions that someone might ask a mental health assistant. These should be gentle, supportive questions that encourage people to open up about their feelings and mental state."
-      : "You are a helpful mental health companion chatbot. Based on the conversation history provided, generate 3-5 follow-up questions that would be natural for the user to ask next. These should be thoughtful, relevant to the conversation, and encourage further discussion about mental health and wellbeing.";
+    let prompt = "Generate natural first-person statements a user might say to a mental health companion.";
+    
+    // Add conversation context if we have messages
+    if (messages && messages.length > 0) {
+      prompt = `Based on this conversation, generate relevant statements the user might say next:\n\n`;
+      const chatHistory = messages.map(msg => 
+        `${msg.isBot ? "Assistant" : "User"}: ${msg.content}`
+      ).join("\n");
+      
+      prompt += chatHistory;
+    }
 
-    // Format conversation history if available
-    const conversationHistory = messages.map(msg => ({
-      role: msg.isBot ? "assistant" : "user",
-      content: msg.content
-    }));
-
-    // Prepare OpenAI API request
-    const openAIRequest = {
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...(conversationHistory.length > 0 ? conversationHistory : [])
-      ],
-      temperature: 0.7,
-      max_tokens: 150
-    };
-
-    console.log('Making request to OpenAI with payload:', openAIRequest);
-
+    // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(openAIRequest),
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 150,
+      }),
     });
 
+    // Process OpenAI response
     const data = await response.json();
-
-    if (!response.ok) {
-      console.error('OpenAI API error:', data.error);
-      throw new Error(data.error?.message || 'Failed to get AI response');
+    console.log("OpenAI response received");
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.log("Invalid response from OpenAI, using fallbacks");
+      throw new Error("Invalid response from OpenAI");
     }
 
-    console.log('Received response from OpenAI');
-
-    const aiText = data.choices[0].message.content;
+    const content = data.choices[0].message.content;
+    console.log("Raw content from OpenAI:", content);
     
-    // Extract suggestions from the response text
-    // This handles both list formats like "1. Question" and plain text with line breaks
-    const suggestionPattern = /(?:\d+\.\s+|[-*]\s+|^)(.*?)(?=\n\d+\.|$)/gs;
-    let suggestions = [];
-    let match;
+    // Parse the statements, looking for lines/items which could be an array or numbering
+    const suggestionRegex = /(?:\d+\.\s+|[-*•]\s*|")(.*?)(?=(?:\d+\.\s+|[-*•]\s*|"|\n|$))/g;
+    const matches = [...content.matchAll(suggestionRegex)].map(match => match[1].trim());
     
-    while ((match = suggestionPattern.exec(aiText)) !== null) {
-      const suggestion = match[1].trim();
-      if (suggestion && !suggestion.match(/^(\d+\.|-|\*)\s*$/)) {
-        suggestions.push(suggestion);
-      }
-    }
+    let suggestions = matches.length > 0 
+      ? matches 
+      : content.split('\n').filter(line => line.trim().length > 0).map(line => line.trim());
     
-    // If regex didn't find suggestions, fall back to splitting by newlines
+    // Clean up suggestions (remove quotes, numbering, etc.)
+    suggestions = suggestions.map(s => s.replace(/^["']|["']$/g, '').trim());
+    
+    // Ensure we have at least some suggestions
     if (suggestions.length === 0) {
-      suggestions = aiText
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line && line.length > 10 && !line.startsWith('#'));
-    }
-    
-    // Filter to only keep items that look like questions
-    suggestions = suggestions
-      .filter(s => s.endsWith('?'))
-      .slice(0, 5); // Limit to 5 suggestions
-
-    // Fallback suggestions if we couldn't generate any
-    if (suggestions.length === 0) {
-      if (currentState === "initial") {
-        suggestions = [
-          "How are you feeling today?",
-          "What's been on your mind lately?",
-          "Would you like to talk about something specific?",
-          "Is there anything causing you stress right now?",
-          "How has your mood been this week?"
-        ];
-      } else {
-        suggestions = [
-          "Can you tell me more about that?",
-          "How does that make you feel?",
-          "What would help you feel better right now?",
-          "Have you talked to anyone else about this?",
-          "What coping strategies have worked for you in the past?"
-        ];
-      }
+      console.log("No valid suggestions extracted, using fallbacks");
+      suggestions = initialSuggestions;
     }
 
-    return new Response(JSON.stringify({ suggestions }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.log(`Generated ${suggestions.length} suggestions`);
+
+    return new Response(
+      JSON.stringify({ suggestions }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    console.error('Error in generate-prompts function:', error);
+    console.error("Error generating prompts:", error);
+    
+    // Fallback suggestions (statements rather than questions)
+    const fallbackSuggestions = [
+      "I've been feeling anxious lately.",
+      "My work stress is becoming overwhelming.",
+      "I struggle with setting boundaries.",
+      "I feel disconnected from others.",
+      "I have trouble sleeping at night."
+    ];
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        suggestions: [
-          "How are you feeling today?",
-          "What's been on your mind lately?",
-          "Would you like to talk about something specific?"
-        ] 
+        suggestions: fallbackSuggestions,
+        error: error.message 
       }),
       { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
