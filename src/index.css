@@ -2,68 +2,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 222 47% 11%;
-    
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
- 
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
- 
-    --primary: 258 80% 74%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
- 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
- 
-    --accent: 251 91% 95%;
-    --accent-foreground: 222 47% 11%;
- 
-    --destructive: 0 84% 60%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
- 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
- 
-    --radius: 0.75rem;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
- 
+
   .dark {
-    --background: 222 47% 11%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
- 
-    --card: 222 47% 11%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
- 
-    --popover: 222 47% 11%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
- 
-    --primary: 258 80% 74%;
-    --primary-foreground: 222 47% 11%;
- 
-    --secondary: 217 33% 17%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
- 
-    --accent: 217 33% 17%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 63% 31%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 212 27% 84%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -76,49 +59,18 @@
   }
 }
 
-.neumorphic {
-  @apply bg-neuro-light dark:bg-neuro-dark rounded-xl shadow-[5px_5px_10px_rgba(163,177,198,0.6),-5px_-5px_10px_rgba(255,255,255,0.5)] dark:shadow-[5px_5px_10px_rgba(0,0,0,0.6),-5px_-5px_10px_rgba(255,255,255,0.1)];
-  border-radius: 12px;
-  box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff;
-}
-
-.dark .neumorphic {
-  box-shadow: 8px 8px 16px #1a1a1a, -8px -8px 16px #3e3e3e;
-}
-
-.neumorphic-inset {
-  @apply bg-neuro-light dark:bg-neuro-dark rounded-xl shadow-[inset_5px_5px_10px_rgba(163,177,198,0.6),inset_-5px_-5px_10px_rgba(255,255,255,0.5)] dark:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.6),inset_-5px_-5px_10px_rgba(255,255,255,0.1)];
-}
-
-.message-transition {
-  @apply transition-all duration-300 ease-in-out;
-}
-
-/* Custom scrollbar styling */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(163, 177, 198, 0.3);
-  border-radius: 20px;
-  border: 2px solid transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(163, 177, 198, 0.5);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+@layer components {
+  .neumorphic {
+    @apply bg-white dark:bg-slate-800 shadow-[5px_5px_10px_rgba(0,0,0,0.1),-5px_-5px_10px_rgba(255,255,255,0.8)] dark:shadow-[5px_5px_10px_rgba(0,0,0,0.5),-5px_-5px_10px_rgba(255,255,255,0.05)] transition-all duration-300;
+  }
+  
+  .message-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .animate-fade-in {
+    @apply animate-in fade-in slide-in-from-bottom-2 duration-300;
+  }
 }
 
 /* Hide scrollbar by default */
@@ -127,41 +79,49 @@
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Show scrollbar on hover and when scrolling */
-.hover:scrollbar-show:hover::-webkit-scrollbar,
-.hover:scrollbar-show:active::-webkit-scrollbar {
+/* Show custom scrollbar on hover or when scrolling */
+.scrollbar-hide.hover\:scrollbar-show:hover::-webkit-scrollbar,
+.scrollbar-hide.hover\:scrollbar-show::-webkit-scrollbar {
   display: block;
+  width: 8px;
 }
 
-.hover:scrollbar-show:hover,
-.hover:scrollbar-show:active {
-  -ms-overflow-style: auto;  /* IE and Edge */
-  scrollbar-width: thin;  /* Firefox */
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Light mode background */
-.bg-light-bg {
-  background-color: #e0e0e0;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
 }
 
-/* Dark mode background */
-.bg-dark-bg {
-  background-color: #2e2e2e;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
-.hover\:bg-sidebar-accent:hover {
-  background-color: theme('colors.neuro.teal'); /* Using new teal value */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
-.hover\:text-sidebar-accent-foreground:hover {
-  color: theme('colors.primary-foreground'); /* Adjust as needed */
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #555;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
-.active\:bg-sidebar-accent:active {
-  background-color: theme('colors.neuro.teal'); 
-}
-.active\:text-sidebar-accent-foreground:active {
-  color: theme('colors.primary-foreground'); 
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #777;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }

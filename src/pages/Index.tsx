@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose, ArrowDown, ArrowUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PromptSuggestions } from "@/components/PromptSuggestions";
 
 interface Message {
   id: string;
@@ -48,6 +50,9 @@ const Index = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
+  
+  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -96,6 +101,38 @@ const Index = () => {
       };
     }
   }, [showSidebar, isMobile]);
+
+  const fetchPromptSuggestions = async (state: "initial" | "ongoing" = "initial") => {
+    try {
+      setIsLoadingSuggestions(true);
+      
+      // Get the last few messages for context if we're in ongoing state
+      const contextMessages = state === "ongoing" 
+        ? messages.slice(-3) 
+        : [];
+      
+      const { data, error } = await supabase.functions.invoke('generate-prompts', {
+        body: {
+          messages: contextMessages,
+          currentState: state
+        }
+      });
+
+      if (error) throw new Error(error.message);
+      
+      setPromptSuggestions(data.suggestions || []);
+    } catch (error) {
+      console.error("Error fetching prompt suggestions:", error);
+      // Fallback suggestions
+      setPromptSuggestions([
+        "How are you feeling today?",
+        "What's been on your mind lately?",
+        "Would you like to talk about something specific?"
+      ]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
 
   const scrollToBottom = () => {
     if (shouldAutoScroll) {
@@ -170,13 +207,20 @@ const Index = () => {
         return;
       }
 
-      setMessages(
-        (data || []).map(msg => ({
-          id: msg.id,
-          content: msg.content,
-          isBot: msg.is_bot
-        }))
-      );
+      const messagesList = (data || []).map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        isBot: msg.is_bot
+      }));
+      
+      setMessages(messagesList);
+      
+      // Update prompt suggestions based on the conversation context
+      if (messagesList.length > 0) {
+        fetchPromptSuggestions("ongoing");
+      } else {
+        fetchPromptSuggestions("initial");
+      }
     };
 
     fetchMessages();
@@ -191,6 +235,9 @@ const Index = () => {
 
       if (!existingSessions || existingSessions.length === 0) {
         await createNewChat();
+      } else {
+        // Load initial prompt suggestions
+        fetchPromptSuggestions("initial");
       }
     };
 
@@ -237,6 +284,9 @@ const Index = () => {
         content: welcomeMessage.content,
         isBot: welcomeMessage.is_bot
       }]);
+      
+      // Get initial prompt suggestions after welcome message
+      fetchPromptSuggestions("initial");
     }
   };
 
@@ -326,6 +376,9 @@ const Index = () => {
         .from('chat_sessions')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', currentSessionId);
+        
+      // Update prompt suggestions after conversation update
+      fetchPromptSuggestions("ongoing");
 
     } catch (error) {
       console.error("Error in chat:", error);
@@ -337,6 +390,10 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    handleSend(suggestion);
   };
 
   const handleDeleteChat = async (sessionId: string) => {
@@ -513,13 +570,43 @@ const Index = () => {
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto custom-scrollbar scrollbar-hide hover:scrollbar-show space-y-4 pb-24 pt-16"
           >
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message.content}
-                isBot={message.isBot}
-              />
+            {messages.length === 0 && (
+              <div className="flex flex-col gap-6 items-center justify-center min-h-[50vh] px-4">
+                <h2 className="text-xl font-medium text-center">Welcome to your mental health companion</h2>
+                <p className="text-center text-muted-foreground">
+                  I'm here to listen and support you. Feel free to share anything that's on your mind.
+                </p>
+                {promptSuggestions.length > 0 && (
+                  <div className="w-full max-w-md">
+                    <h3 className="text-sm text-center mb-2 text-muted-foreground">You could start with:</h3>
+                    <PromptSuggestions 
+                      suggestions={promptSuggestions} 
+                      onSuggestionClick={handleSuggestionClick}
+                      className="justify-center" 
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {messages.map((message, index) => (
+              <div key={message.id}>
+                <ChatMessage
+                  message={message.content}
+                  isBot={message.isBot}
+                />
+                {/* Show prompt suggestions after bot messages */}
+                {message.isBot && index === messages.length - 1 && promptSuggestions.length > 0 && (
+                  <div className="py-4">
+                    <PromptSuggestions 
+                      suggestions={promptSuggestions} 
+                      onSuggestionClick={handleSuggestionClick} 
+                    />
+                  </div>
+                )}
+              </div>
             ))}
+            
             {isLoading && (
               <div className="flex justify-start">
                 <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
