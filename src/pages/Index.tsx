@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PanelLeftOpen, PanelLeftClose, ArrowDown, ArrowUp } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -40,7 +40,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [showScrollUp, setShowScrollUp] = useState(false);
