@@ -71,6 +71,7 @@ const Index = () => {
     
     const swipeDistance = touchEndX.current - touchStartX.current;
     const isLeftEdgeSwipe = touchStartX.current < EDGE_THRESHOLD;
+    const isRightEdgeSwipe = touchEndX.current > window.innerWidth - EDGE_THRESHOLD;
     
     if (swipeDistance > SWIPE_THRESHOLD && isLeftEdgeSwipe && !showSidebar) {
       setShowSidebar(true);
@@ -494,35 +495,41 @@ const Index = () => {
 
   return (
     <div className="flex h-screen relative" ref={mainContainerRef}>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setShowSidebar(!showSidebar)}
-        className={`fixed ${showSidebar ? 'left-64' : 'left-4'} top-4 z-50 shadow-lg hover:shadow-xl transition-all duration-300`}
-      >
-        {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
-      </Button>
-
-      <div
-        className={`
-          fixed left-0 top-0 min-h-screen h-full z-40 
-          transition-all duration-300 ease-in-out
-          overflow-hidden
-          ${showSidebar ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'}
-        `}
-      >
-        <div className="w-64 h-screen">
-          <ChatSidebar
-            sessions={sessions}
-            currentSessionId={currentSessionId}
-            onNewChat={createNewChat}
-            onSelectChat={setCurrentSessionId}
-            onDeleteChat={handleDeleteChat}
-            onArchiveChat={handleArchiveChat}
-            onUnarchiveChat={handleUnarchiveChat}
-          />
+      {showSidebar ? (
+        <div
+          className="fixed left-0 top-0 min-h-screen h-full z-40 
+            transition-all duration-300 ease-in-out overflow-hidden w-64 translate-x-0"
+        >
+          <div className="w-64 h-screen relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowSidebar(false)}
+              className="absolute right-3 top-3 z-50 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <PanelLeftClose />
+            </Button>
+            <ChatSidebar
+              sessions={sessions}
+              currentSessionId={currentSessionId}
+              onNewChat={createNewChat}
+              onSelectChat={setCurrentSessionId}
+              onDeleteChat={handleDeleteChat}
+              onArchiveChat={handleArchiveChat}
+              onUnarchiveChat={handleUnarchiveChat}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowSidebar(true)}
+          className="fixed left-4 top-4 z-50 shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <PanelLeftOpen />
+        </Button>
+      )}
 
       <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
         <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
@@ -595,8 +602,8 @@ const Index = () => {
             ))}
             
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="neumorphic animate-pulse p-4 rounded-tr-2xl max-w-[80%]">
+              <div className="flex justify-start w-full gap-3 py-3">
+                <div className="neumorphic-box max-w-[80%] p-5 animate-pulse rounded-2xl bg-white dark:bg-slate-800">
                   <p className="text-muted-foreground">Thinking...</p>
                 </div>
               </div>
