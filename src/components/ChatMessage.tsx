@@ -13,11 +13,9 @@ export function ChatMessage({ message, isBot, image }: ChatMessageProps) {
       <div
         className={cn(
           "neumorphic max-w-[80%] p-5 message-transition animate-fade-in rounded-2xl",
-          isBot 
-            ? "bg-neuro-light dark:bg-neuro-dark" 
-            : "bg-neuro-lavender dark:bg-slate-700",
-          // Improved shadows for both light and dark mode
-          "shadow-[5px_5px_15px_rgba(0,0,0,0.1),-5px_-5px_15px_rgba(255,255,255,0.8)]",
+          "bg-white dark:bg-slate-800",
+          // Enhanced uniform shadows for both light and dark mode
+          "shadow-[5px_5px_15px_rgba(0,0,0,0.12),-5px_-5px_15px_rgba(255,255,255,0.8)]",
           "dark:shadow-[5px_5px_15px_rgba(0,0,0,0.5),-5px_-5px_15px_rgba(255,255,255,0.05)]"
         )}
       >

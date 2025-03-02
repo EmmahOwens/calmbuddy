@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -106,7 +105,6 @@ const Index = () => {
     try {
       setIsLoadingSuggestions(true);
       
-      // Get the last few messages for context if we're in ongoing state
       const contextMessages = state === "ongoing" 
         ? messages.slice(-3) 
         : [];
@@ -123,7 +121,6 @@ const Index = () => {
       setPromptSuggestions(data.suggestions || []);
     } catch (error) {
       console.error("Error fetching prompt suggestions:", error);
-      // Fallback suggestions
       setPromptSuggestions([
         "How are you feeling today?",
         "What's been on your mind lately?",
@@ -135,9 +132,7 @@ const Index = () => {
   };
 
   const scrollToBottom = () => {
-    if (shouldAutoScroll) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToTop = () => {
@@ -215,7 +210,6 @@ const Index = () => {
       
       setMessages(messagesList);
       
-      // Update prompt suggestions based on the conversation context
       if (messagesList.length > 0) {
         fetchPromptSuggestions("ongoing");
       } else {
@@ -236,7 +230,6 @@ const Index = () => {
       if (!existingSessions || existingSessions.length === 0) {
         await createNewChat();
       } else {
-        // Load initial prompt suggestions
         fetchPromptSuggestions("initial");
       }
     };
@@ -285,7 +278,6 @@ const Index = () => {
         isBot: welcomeMessage.is_bot
       }]);
       
-      // Get initial prompt suggestions after welcome message
       fetchPromptSuggestions("initial");
     }
   };
@@ -377,7 +369,6 @@ const Index = () => {
         .update({ updated_at: new Date().toISOString() })
         .eq('id', currentSessionId);
         
-      // Update prompt suggestions after conversation update
       fetchPromptSuggestions("ongoing");
 
     } catch (error) {
@@ -507,7 +498,7 @@ const Index = () => {
         variant="ghost"
         size="icon"
         onClick={() => setShowSidebar(!showSidebar)}
-        className="fixed top-4 left-4 z-50 shadow-lg hover:shadow-xl transition-shadow duration-200"
+        className={`fixed ${showSidebar ? 'left-64' : 'left-4'} top-4 z-50 shadow-lg hover:shadow-xl transition-all duration-300`}
       >
         {showSidebar ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
@@ -555,10 +546,7 @@ const Index = () => {
             <Button
               variant="secondary"
               size="icon"
-              onClick={() => {
-                setShouldAutoScroll(true);
-                scrollToBottom();
-              }}
+              onClick={scrollToBottom}
               className="fixed bottom-20 right-8 z-50 rounded-full shadow-lg hover:shadow-xl transition-opacity duration-200 opacity-80 hover:opacity-100"
             >
               <ArrowDown className="h-4 w-4" />
@@ -595,7 +583,6 @@ const Index = () => {
                   message={message.content}
                   isBot={message.isBot}
                 />
-                {/* Show prompt suggestions after bot messages */}
                 {message.isBot && index === messages.length - 1 && promptSuggestions.length > 0 && (
                   <div className="py-4">
                     <PromptSuggestions 
