@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -49,12 +50,17 @@ export default {
           teal: "#38b2ac",
           "teal-dark": "#2C7A7B",
           lavender: "#E5DEFF",
+          "lavender-dark": "#6B46C1",
+          gray: "#F1F5F9",
+          "gray-dark": "#334155",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "1rem",
+        "2xl": "1.5rem",
       },
       keyframes: {
         "accordion-down": {
@@ -79,6 +85,12 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "fade-out": "fade-out 0.3s ease-out",
+      },
+      boxShadow: {
+        neuro: "5px 5px 10px rgba(0,0,0,0.1), -5px -5px 10px rgba(255,255,255,0.8)",
+        "neuro-dark": "5px 5px 10px rgba(0,0,0,0.5), -5px -5px 10px rgba(255,255,255,0.05)",
+        "neuro-inset": "inset 3px 3px 6px rgba(0,0,0,0.1), inset -3px -3px 6px rgba(255,255,255,0.8)",
+        "neuro-inset-dark": "inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(255,255,255,0.05)",
       },
     },
   },
