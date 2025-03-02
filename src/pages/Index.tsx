@@ -495,43 +495,54 @@ const Index = () => {
 
   return (
     <div className="flex h-screen relative" ref={mainContainerRef}>
-      {showSidebar ? (
-        <div
-          className="fixed left-0 top-0 min-h-screen h-full z-40 
-            transition-all duration-300 ease-in-out overflow-hidden w-64 translate-x-0"
-        >
-          <div className="w-64 h-screen relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSidebar(false)}
-              className="absolute right-3 top-3 z-50 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <PanelLeftClose />
-            </Button>
-            <ChatSidebar
-              sessions={sessions}
-              currentSessionId={currentSessionId}
-              onNewChat={createNewChat}
-              onSelectChat={setCurrentSessionId}
-              onDeleteChat={handleDeleteChat}
-              onArchiveChat={handleArchiveChat}
-              onUnarchiveChat={handleUnarchiveChat}
-            />
-          </div>
+      <div 
+        className={`
+          fixed left-0 top-0 min-h-screen h-full z-40 
+          transition-transform duration-300 ease-in-out
+          ${showSidebar ? 'translate-x-0' : '-translate-x-full'}
+          w-64
+        `}
+      >
+        <div className="w-64 h-screen relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSidebar(false)}
+            className="absolute right-3 top-3 z-50 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <PanelLeftClose />
+          </Button>
+          <ChatSidebar
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onNewChat={createNewChat}
+            onSelectChat={setCurrentSessionId}
+            onDeleteChat={handleDeleteChat}
+            onArchiveChat={handleArchiveChat}
+            onUnarchiveChat={handleUnarchiveChat}
+          />
         </div>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowSidebar(true)}
-          className="fixed left-4 top-4 z-50 shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <PanelLeftOpen />
-        </Button>
-      )}
+      </div>
 
-      <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setShowSidebar(true)}
+        className={`
+          fixed left-4 top-4 z-50 
+          shadow-lg hover:shadow-xl 
+          transition-opacity duration-300
+          ${showSidebar ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}
+        `}
+      >
+        <PanelLeftOpen />
+      </Button>
+
+      <div className={`
+        flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48
+        transition-all duration-300
+        ${showSidebar ? 'pl-64 md:pl-0 md:ml-0' : 'pl-0'}
+      `}>
         <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
           <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
             <ChatSettings />
