@@ -538,11 +538,7 @@ const Index = () => {
         <PanelLeftOpen />
       </Button>
 
-      <div className={`
-        flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48
-        transition-all duration-300
-        ${showSidebar ? 'pl-64 md:pl-0 md:ml-0' : 'pl-0'}
-      `}>
+      <div className="flex-1 flex justify-center px-0 md:px-16 lg:px-32 xl:px-48">
         <div className="w-full max-w-3xl flex flex-col min-h-screen p-4 relative">
           <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
             <ChatSettings />
