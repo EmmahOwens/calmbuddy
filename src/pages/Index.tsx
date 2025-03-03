@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -595,7 +594,7 @@ const Index = () => {
                     <PromptSuggestions 
                       suggestions={promptSuggestions} 
                       onSuggestionClick={handleSuggestionClick}
-                      className="justify-center" 
+                      isLoading={isLoadingSuggestions}
                     />
                   </div>
                 )}
@@ -612,7 +611,8 @@ const Index = () => {
                   <div className="py-4">
                     <PromptSuggestions 
                       suggestions={promptSuggestions} 
-                      onSuggestionClick={handleSuggestionClick} 
+                      onSuggestionClick={handleSuggestionClick}
+                      isLoading={isLoadingSuggestions}
                     />
                   </div>
                 )}
