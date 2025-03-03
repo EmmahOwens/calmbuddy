@@ -608,11 +608,13 @@ const Index = () => {
                   isBot={message.isBot}
                 />
                 {message.isBot && index === messages.length - 1 && promptSuggestions.length > 0 && (
-                  <div className="py-4">
+                  <div className="ml-10 mt-2 max-w-[80%]">
                     <PromptSuggestions 
                       suggestions={promptSuggestions} 
                       onSuggestionClick={handleSuggestionClick}
                       isLoading={isLoadingSuggestions}
+                      isInline={true}
+                      className="justify-start"
                     />
                   </div>
                 )}
