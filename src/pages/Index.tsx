@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -32,6 +33,16 @@ const systemPrompt = `You are an empathetic and professional mental health compa
 - Brief but meaningful (keep responses under 3 sentences unless necessary)
 - Structured to encourage user expression
 
+Use relevant emojis to express emotions when appropriate:
+- Use 😊 for greetings and positive encouragement
+- Use 🤔 when asking thoughtful questions
+- Use 💭 when reflecting on the user's thoughts
+- Use 💪 for motivation and strength
+- Use 🌱 for growth and progress
+- Use 🧘 for mindfulness and calm
+- Use ❤️ for empathy and care
+
+Balance emoji usage - typically use 1-2 emojis per message. Don't overuse them.
 If you sense any serious mental health concerns, always recommend seeking professional help.`;
 
 const Index = () => {

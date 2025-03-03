@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          income: number | null
+          message: string | null
+          name: string
+          phone: string | null
+          property_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          income?: number | null
+          message?: string | null
+          name: string
+          phone?: string | null
+          property_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          income?: number | null
+          message?: string | null
+          name?: string
+          phone?: string | null
+          property_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -65,6 +109,57 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_requests: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          priority: string
+          property_id: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          priority: string
+          property_id: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string
+          property_id?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       models: {
         Row: {
           accuracy: number
@@ -75,6 +170,7 @@ export type Database = {
           name: string
           neural_network_architecture: Json | null
           parameters: Json | null
+          targets: Json | null
           type: string
         }
         Insert: {
@@ -86,6 +182,7 @@ export type Database = {
           name: string
           neural_network_architecture?: Json | null
           parameters?: Json | null
+          targets?: Json | null
           type: string
         }
         Update: {
@@ -97,9 +194,170 @@ export type Database = {
           name?: string
           neural_network_architecture?: Json | null
           parameters?: Json | null
+          targets?: Json | null
           type?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          name?: string | null
+          role: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          landlord_id: string
+          rent_amount: number | null
+          square_feet: number | null
+          status: string
+        }
+        Insert: {
+          address: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          landlord_id: string
+          rent_amount?: number | null
+          square_feet?: number | null
+          status: string
+        }
+        Update: {
+          address?: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          landlord_id?: string
+          rent_amount?: number | null
+          square_feet?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          created_at: string | null
+          id: string
+          lease_end: string
+          lease_start: string
+          name: string
+          property_id: string
+          rent_status: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lease_end: string
+          lease_start: string
+          name: string
+          property_id: string
+          rent_status: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lease_end?: string
+          lease_start?: string
+          name?: string
+          property_id?: string
+          rent_status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenants_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenants_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

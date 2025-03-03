@@ -23,6 +23,37 @@ serve(async (req) => {
 
     console.log('Making request to OpenAI with messages:', messages);
 
+    // We don't modify the input messages, but we ensure the system message has emoji instructions
+    const hasSystemMessage = messages.some(msg => msg.role === 'system');
+    
+    const processedMessages = hasSystemMessage 
+      ? messages 
+      : [
+          { 
+            role: 'system', 
+            content: `You are an empathetic and professional mental health companion chatbot. Your responses should be:
+- Supportive and non-judgmental
+- Focused on active listening and validation
+- Professional but warm in tone
+- Clear about not being a replacement for professional mental health care
+- Brief but meaningful (keep responses under 3 sentences unless necessary)
+- Structured to encourage user expression
+
+Use relevant emojis to express emotions when appropriate:
+- Use 😊 for greetings and positive encouragement
+- Use 🤔 when asking thoughtful questions
+- Use 💭 when reflecting on the user's thoughts
+- Use 💪 for motivation and strength
+- Use 🌱 for growth and progress
+- Use 🧘 for mindfulness and calm
+- Use ❤️ for empathy and care
+
+Balance emoji usage - typically use 1-2 emojis per message. Don't overuse them.
+If you sense any serious mental health concerns, always recommend seeking professional help.`
+          },
+          ...messages
+        ];
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -31,7 +62,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages,
+        messages: processedMessages,
         temperature: 0.7,
         max_tokens: 150,
       }),
