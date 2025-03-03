@@ -7,18 +7,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your job is to suggest helpful prompts that the human user might want to ask or say next based on the conversation context. Generate prompts from the user's perspective, as if the user is talking to you.
+const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your job is to suggest helpful prompts that the human user might want to say next based on the conversation context. Generate prompts from the user's perspective, as if the user is talking to you.
 
 Your suggestions should be:
 - From the user's perspective (what THEY would say to YOU)
+- Phrased primarily as statements or expressions rather than questions
 - Supportive of their mental health journey
 - Relevant to the current conversation topic
 - Natural follow-ups to the conversation flow
 - Brief (max 10 words per suggestion)
-- Phrased as questions or statements the user might make
 
-If the conversation is just starting, suggest general mental health topics the user might want to discuss.
-If the conversation has context, suggest relevant follow-up questions or statements the user might want to make.`;
+If the conversation is just starting, suggest general mental health topics or feelings the user might want to share.
+If the conversation has context, suggest relevant statements, expressions of feeling, or occasional questions the user might want to make.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -53,7 +53,7 @@ serve(async (req) => {
           model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion." }
+            { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, primarily as statements rather than questions." }
           ],
           temperature: 0.7,
           max_tokens: 150,
@@ -92,7 +92,7 @@ serve(async (req) => {
           messages: [
             { role: "system", content: systemPrompt },
             ...conversationContext,
-            { role: "user", content: "Based on our conversation, suggest 5 things I might want to say to you next, from my perspective as the human user." }
+            { role: "user", content: "Based on our conversation, suggest 5 things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
           ],
           temperature: 0.7,
           max_tokens: 150,
@@ -123,11 +123,11 @@ serve(async (req) => {
       JSON.stringify({ 
         error: error.message,
         suggestions: [
-          "How are you feeling today?",
-          "What's been on your mind lately?",
-          "Can you help me with my anxiety?",
-          "I've been feeling sad recently.",
-          "Tell me about mindfulness techniques."
+          "I'm feeling overwhelmed today.",
+          "Let me tell you about my week.",
+          "I'm struggling with work stress.",
+          "I've been practicing mindfulness.",
+          "My sleep patterns have been irregular."
         ]
       }),
       { 
