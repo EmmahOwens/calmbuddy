@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,7 +62,7 @@
     button, 
     [role="button"],
     a {
-      @apply min-h-[44px] min-w-[44px];
+      @apply min-h-[40px];
     }
     
     /* Add safe area insets for iOS devices */
@@ -121,6 +120,11 @@
   
   .mobile-scroll-buttons {
     @apply !right-2;
+  }
+  
+  /* Prompt suggestion buttons on mobile */
+  .suggestion-button-mobile {
+    @apply break-words whitespace-normal text-left min-h-0;
   }
 }
 

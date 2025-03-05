@@ -55,13 +55,16 @@ export function PromptSuggestions({
               variant="outline"
               className={cn(
                 "text-xs md:text-sm rounded-full px-3 md:px-4 py-1 md:py-2 h-auto text-left",
-                "line-clamp-1 md:line-clamp-1 text-ellipsis overflow-hidden whitespace-nowrap",
                 "neumorphic-button hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]",
-                isInline ? "bg-gray-50 dark:bg-slate-900 max-w-[160px] md:max-w-[200px]" : "",
-                "max-w-[140px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[280px]"
+                isInline ? "bg-gray-50 dark:bg-slate-900" : "",
+                "min-h-0 whitespace-normal break-words"
               )}
               onClick={() => onSuggestionClick(suggestion)}
-              title={suggestion} // Add title for tooltip on hover
+              title={suggestion}
+              style={{ 
+                minWidth: isMobile ? "auto" : "",
+                maxWidth: isInline ? "240px" : isMobile ? "100%" : "280px"
+              }}
             >
               {suggestion}
             </Button>
