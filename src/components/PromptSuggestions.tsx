@@ -54,11 +54,14 @@ export function PromptSuggestions({
               key={index}
               variant="outline"
               className={cn(
-                "text-xs md:text-sm rounded-full px-3 md:px-4 py-1 md:py-2 h-auto text-left line-clamp-2 md:line-clamp-1 neumorphic-button hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]",
-                isInline ? "bg-gray-50 dark:bg-slate-900 max-w-[200px] md:max-w-none" : "",
-                "max-w-[180px] md:max-w-[280px]"
+                "text-xs md:text-sm rounded-full px-3 md:px-4 py-1 md:py-2 h-auto text-left",
+                "line-clamp-1 md:line-clamp-1 text-ellipsis overflow-hidden whitespace-nowrap",
+                "neumorphic-button hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]",
+                isInline ? "bg-gray-50 dark:bg-slate-900 max-w-[160px] md:max-w-[200px]" : "",
+                "max-w-[140px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[280px]"
               )}
               onClick={() => onSuggestionClick(suggestion)}
+              title={suggestion} // Add title for tooltip on hover
             >
               {suggestion}
             </Button>
