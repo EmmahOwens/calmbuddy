@@ -167,6 +167,9 @@ export type Database = {
           created_at: string
           dataset_name: string
           id: string
+          is_trained: boolean | null
+          model_data: string | null
+          model_predictions: Json | null
           name: string
           neural_network_architecture: Json | null
           parameters: Json | null
@@ -179,6 +182,9 @@ export type Database = {
           created_at?: string
           dataset_name: string
           id?: string
+          is_trained?: boolean | null
+          model_data?: string | null
+          model_predictions?: Json | null
           name: string
           neural_network_architecture?: Json | null
           parameters?: Json | null
@@ -191,6 +197,9 @@ export type Database = {
           created_at?: string
           dataset_name?: string
           id?: string
+          is_trained?: boolean | null
+          model_data?: string | null
+          model_predictions?: Json | null
           name?: string
           neural_network_architecture?: Json | null
           parameters?: Json | null

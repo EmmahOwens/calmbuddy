@@ -54,38 +54,77 @@ If you sense any serious mental health concerns, always recommend seeking profes
           ...messages
         ];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: processedMessages,
-        temperature: 0.7,
-        max_tokens: 150,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: processedMessages,
+          temperature: 0.7,
+          max_tokens: 150,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      console.error('OpenAI API error:', data.error);
-      throw new Error(data.error?.message || 'Failed to get AI response');
+      if (!response.ok) {
+        console.error('OpenAI API error:', data.error);
+        throw new Error(data.error?.message || 'Failed to get AI response');
+      }
+
+      console.log('Received successful response from OpenAI');
+
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error with primary model, attempting fallback model:', error);
+      
+      // Fallback to a different model
+      const fallbackResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: processedMessages,
+          temperature: 0.7,
+          max_tokens: 150,
+        }),
+      });
+
+      const fallbackData = await fallbackResponse.json();
+
+      if (!fallbackResponse.ok) {
+        console.error('Fallback model also failed:', fallbackData.error);
+        throw new Error(fallbackData.error?.message || 'Failed with both primary and fallback models');
+      }
+
+      console.log('Received successful response from fallback model');
+      
+      return new Response(JSON.stringify(fallbackData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-
-    console.log('Received successful response from OpenAI');
-
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
     console.error('Error in chat function:', error);
+    // Return a friendly error message to the client
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        choices: [{
+          message: {
+            content: "I'm having trouble processing your message right now. Could you try again in a moment?"
+          }
+        }]
+      }),
       { 
-        status: 500,
+        status: 200, // Return 200 status to avoid breaking the client
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

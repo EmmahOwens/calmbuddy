@@ -25,6 +25,12 @@ export function PromptSuggestions({
             Loading suggestions...
           </div>
         </div>
+      ) : suggestions.length === 0 ? (
+        <div className="w-full flex justify-center py-2">
+          <div className="text-sm text-muted-foreground">
+            No suggestions available
+          </div>
+        </div>
       ) : (
         suggestions.map((suggestion, index) => (
           <Button
