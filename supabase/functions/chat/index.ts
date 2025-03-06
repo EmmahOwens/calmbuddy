@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -121,15 +120,18 @@ Use relevant emojis to express emotions when appropriate:
 Balance emoji usage - typically use 1-2 emojis per message. Don't overuse them.
 If you sense any serious mental health concerns, always recommend seeking professional help.
 
-IMPORTANT: For repeat questions, provide new perspectives, different wording and examples each time. Use different metaphors, approaches and suggestions for similar topics to keep responses fresh and helpful.`
+IMPORTANT: For repeat questions, provide new perspectives, different wording and examples each time. Use different metaphors, approaches and suggestions for similar topics to keep responses fresh and helpful. Never use the same phrasing twice. If asked the same question repeatedly, acknowledge you've addressed this before but offer a new angle each time.`
           },
           ...messages
         ];
 
-    // Add a timestamp to encourage varied responses
+    // Add a more detailed timestamp to encourage varied responses
     processedMessages.push({
       role: 'system',
-      content: `Current timestamp: ${new Date().toISOString()}. Use this as a seed to provide varied responses even for repeat questions.`
+      content: `Current timestamp: ${new Date().toISOString()}. 
+Random seed: ${Math.random().toString(36).substring(2, 15)}. 
+Use these values to provide truly varied responses even for repeat questions.
+For identical or similar user questions that may have been asked before, provide a completely different response using new examples, metaphors, or approaches.`
     });
 
     // Get the user's latest message for fallback detection
@@ -145,10 +147,10 @@ IMPORTANT: For repeat questions, provide new perspectives, different wording and
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: processedMessages,
-          temperature: 0.8, // Increased to add more variability in responses
+          temperature: 0.9, // Increased to add more variability in responses
           max_tokens: 300,
-          frequency_penalty: 0.5, // Added to discourage repetition in responses
-          presence_penalty: 0.5, // Added to encourage covering new topics
+          frequency_penalty: 0.8, // Increased to strongly discourage repetition
+          presence_penalty: 0.8, // Increased to strongly encourage covering new topics
         }),
       });
 
@@ -167,7 +169,7 @@ IMPORTANT: For repeat questions, provide new perspectives, different wording and
     } catch (error) {
       console.error('Error with primary model, attempting fallback model:', error);
       
-      // Fallback to a different model
+      // Fallback to a different model with similar high randomness settings
       try {
         const fallbackResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -178,10 +180,10 @@ IMPORTANT: For repeat questions, provide new perspectives, different wording and
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
             messages: processedMessages,
-            temperature: 0.8,
+            temperature: 0.9,
             max_tokens: 300,
-            frequency_penalty: 0.5,
-            presence_penalty: 0.5,
+            frequency_penalty: 0.8,
+            presence_penalty: 0.8,
           }),
         });
 

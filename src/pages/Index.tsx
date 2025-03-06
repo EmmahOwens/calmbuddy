@@ -116,9 +116,7 @@ const Index = () => {
     try {
       setIsLoadingSuggestions(true);
       
-      const contextMessages = state === "ongoing" 
-        ? messages.slice(-3) 
-        : [];
+      const contextMessages = messages.slice(-3); 
       
       const { data, error } = await supabase.functions.invoke('generate-prompts', {
         body: {
@@ -380,7 +378,9 @@ const Index = () => {
         .update({ updated_at: new Date().toISOString() })
         .eq('id', currentSessionId);
         
-      fetchPromptSuggestions("ongoing");
+      setTimeout(() => {
+        fetchPromptSuggestions("ongoing");
+      }, 500);
 
     } catch (error) {
       console.error("Error in chat:", error);
