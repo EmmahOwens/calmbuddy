@@ -94,6 +94,8 @@ serve(async (req) => {
 - Clear about not being a replacement for professional mental health care
 - Brief but meaningful (keep responses under 3 sentences unless necessary)
 - Structured to encourage user expression
+- Varied in response even to similar questions (never repeat exact phrases or structures)
+- Adaptive to the conversation flow and context
 
 Cover a wide range of mental health topics including but not limited to:
 - Anxiety and stress management
@@ -117,10 +119,18 @@ Use relevant emojis to express emotions when appropriate:
 - Use ❤️ for empathy and care
 
 Balance emoji usage - typically use 1-2 emojis per message. Don't overuse them.
-If you sense any serious mental health concerns, always recommend seeking professional help.`
+If you sense any serious mental health concerns, always recommend seeking professional help.
+
+IMPORTANT: For repeat questions, provide new perspectives, different wording and examples each time. Use different metaphors, approaches and suggestions for similar topics to keep responses fresh and helpful.`
           },
           ...messages
         ];
+
+    // Add a timestamp to encourage varied responses
+    processedMessages.push({
+      role: 'system',
+      content: `Current timestamp: ${new Date().toISOString()}. Use this as a seed to provide varied responses even for repeat questions.`
+    });
 
     // Get the user's latest message for fallback detection
     const latestUserMessage = messages.filter(msg => msg.role === 'user').pop()?.content || "";
@@ -135,8 +145,10 @@ If you sense any serious mental health concerns, always recommend seeking profes
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: processedMessages,
-          temperature: 0.7,
-          max_tokens: 300, // Increased to allow for more detailed responses
+          temperature: 0.8, // Increased to add more variability in responses
+          max_tokens: 300,
+          frequency_penalty: 0.5, // Added to discourage repetition in responses
+          presence_penalty: 0.5, // Added to encourage covering new topics
         }),
       });
 
@@ -166,8 +178,10 @@ If you sense any serious mental health concerns, always recommend seeking profes
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
             messages: processedMessages,
-            temperature: 0.7,
+            temperature: 0.8,
             max_tokens: 300,
+            frequency_penalty: 0.5,
+            presence_penalty: 0.5,
           }),
         });
 

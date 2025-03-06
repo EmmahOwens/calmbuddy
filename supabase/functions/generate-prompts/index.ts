@@ -19,7 +19,7 @@ Your suggestions should cover a wide range of mental health topics, including bu
 - Self-care practices
 - Grief and loss
 - Trauma support
-- Habit formation
+- Habit formation and breaking
 
 Your suggestions should be:
 - From the user's perspective (what THEY would say to YOU)
@@ -28,9 +28,13 @@ Your suggestions should be:
 - Relevant to the current conversation topic
 - Natural follow-ups to the conversation flow
 - Brief (max 10 words per suggestion)
+- Diverse in topic and approach
+- Personalized to the current conversation history
 
 If the conversation is just starting, suggest general mental health topics or feelings the user might want to share.
-If the conversation has context, suggest relevant statements, expressions of feeling, or occasional questions the user might want to make.`;
+If the conversation has context, suggest relevant statements, expressions of feeling, or occasional questions the user might want to make.
+
+IMPORTANT: Pay close attention to the previous messages to ensure highly relevant next-message suggestions that would logically follow in the conversation.`;
 
 // Default fallback suggestions for different states
 const initialFallbackSuggestions = [
@@ -263,9 +267,12 @@ serve(async (req) => {
             messages: [
               { role: "system", content: systemPrompt },
               ...conversationContext,
-              { role: "user", content: "Based on our conversation, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
+              { 
+                role: "user", 
+                content: `Based on our conversation history, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions. Make sure these are highly relevant to our previous exchange. Current timestamp: ${new Date().toISOString()} (use this for variety).` 
+              }
             ],
-            temperature: 0.7,
+            temperature: 0.8,
             max_tokens: 150,
           }),
         });
@@ -303,9 +310,12 @@ serve(async (req) => {
               messages: [
                 { role: "system", content: systemPrompt },
                 ...conversationContext,
-                { role: "user", content: "Based on our conversation, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
+                { 
+                  role: "user", 
+                  content: `Based on our conversation history, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions. Make sure these are highly relevant to our previous exchange. Current timestamp: ${new Date().toISOString()} (use this for variety).` 
+                }
               ],
-              temperature: 0.7,
+              temperature: 0.8,
               max_tokens: 150,
             }),
           });
