@@ -7,6 +7,62 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Create a variety of fallback responses based on different mental health topics and conversation types
+const fallbackResponses = {
+  greeting: "Hello! 😊 I'm here to chat about anything mental health related. How are you feeling today?",
+  appreciation: "You're welcome! 💭 I'm glad I could help in some way. Is there anything else you'd like to discuss?",
+  anxiety: "I understand anxiety can be challenging. 💭 It's a normal response to stress, but it can become overwhelming. Would you like to share more about what you're experiencing?",
+  depression: "Feeling down is something many people experience. ❤️ Remember that your feelings are valid, and it's okay to seek support. Would you like to talk more about what you're going through?",
+  stress: "Managing stress is important for wellbeing. 🧘 Taking small breaks and practicing mindfulness can help. What situations are causing you stress right now?",
+  sleep: "Sleep is crucial for mental health. 💤 Establishing a regular sleep routine can make a difference. Have you noticed any patterns with your sleep lately?",
+  mindfulness: "Mindfulness helps us stay present. 🌱 Even a few minutes of practice can be beneficial. Would you like to learn about some simple mindfulness exercises?",
+  relationships: "Relationships can significantly impact our mental health. 💭 Both challenges and support from others shape our wellbeing. Would you like to talk about a specific relationship?",
+  general: "I'm here to support you with whatever's on your mind. 💭 Mental health is complex and personal. Would you like to share more about what you're experiencing?"
+};
+
+// Helper function to detect the type of message and select appropriate fallback
+function detectMessageType(message) {
+  const text = message.toLowerCase();
+  
+  // Check for greetings
+  if (/^(hi|hello|hey|good (morning|afternoon|evening)|greetings)/i.test(text)) {
+    return "greeting";
+  }
+  
+  // Check for appreciation/thanks
+  if (/thank|thanks|appreciate|grateful/i.test(text)) {
+    return "appreciation";
+  }
+  
+  // Check for different mental health topics
+  if (/anxi|nervous|worry|panic|afraid|fear/i.test(text)) {
+    return "anxiety";
+  }
+  
+  if (/depress|sad|down|low|unhappy|blue|hopeless/i.test(text)) {
+    return "depression";
+  }
+  
+  if (/stress|overwhelm|pressure|burden|too much/i.test(text)) {
+    return "stress";
+  }
+  
+  if (/sleep|insomnia|tired|rest|awake|night/i.test(text)) {
+    return "sleep";
+  }
+  
+  if (/mindful|meditat|breath|present|focus|aware/i.test(text)) {
+    return "mindfulness";
+  }
+  
+  if (/relation|friend|family|partner|colleague|social/i.test(text)) {
+    return "relationships";
+  }
+  
+  // Default
+  return "general";
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -39,6 +95,18 @@ serve(async (req) => {
 - Brief but meaningful (keep responses under 3 sentences unless necessary)
 - Structured to encourage user expression
 
+Cover a wide range of mental health topics including but not limited to:
+- Anxiety and stress management
+- Mood disorders and depression
+- Sleep issues
+- Mindfulness and meditation
+- Relationships and social support
+- Work-life balance
+- Self-care practices
+- Grief and loss
+- Trauma support
+- Habit formation and breaking
+
 Use relevant emojis to express emotions when appropriate:
 - Use 😊 for greetings and positive encouragement
 - Use 🤔 when asking thoughtful questions
@@ -54,6 +122,9 @@ If you sense any serious mental health concerns, always recommend seeking profes
           ...messages
         ];
 
+    // Get the user's latest message for fallback detection
+    const latestUserMessage = messages.filter(msg => msg.role === 'user').pop()?.content || "";
+
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -65,7 +136,7 @@ If you sense any serious mental health concerns, always recommend seeking profes
           model: "gpt-4o-mini",
           messages: processedMessages,
           temperature: 0.7,
-          max_tokens: 200,
+          max_tokens: 300, // Increased to allow for more detailed responses
         }),
       });
 
@@ -96,7 +167,7 @@ If you sense any serious mental health concerns, always recommend seeking profes
             model: "gpt-3.5-turbo",
             messages: processedMessages,
             temperature: 0.7,
-            max_tokens: 200,
+            max_tokens: 300,
           }),
         });
 
@@ -114,13 +185,18 @@ If you sense any serious mental health concerns, always recommend seeking profes
         });
       } catch (fallbackError) {
         console.error('Both models failed completely:', fallbackError);
-        // Instead of returning a generic error message, craft a helpful response
-        // about anxiety since that's a common topic
+        
+        // Determine the type of message and provide a contextually appropriate response
+        const messageType = detectMessageType(latestUserMessage);
+        const fallbackContent = fallbackResponses[messageType];
+        
+        console.log(`Using fallback response type: ${messageType}`);
+        
         return new Response(
           JSON.stringify({ 
             choices: [{
               message: {
-                content: "I understand you're feeling anxious. That's completely valid. 💭 Anxiety can be challenging, and I'm here to listen and support you. Would you like to share more about what's making you feel this way?"
+                content: fallbackContent
               }
             }]
           }),
@@ -133,12 +209,13 @@ If you sense any serious mental health concerns, always recommend seeking profes
     }
   } catch (error) {
     console.error('Error in chat function:', error);
-    // Return a more helpful response instead of a generic error message
+    
+    // Use a generic helpful response as last resort
     return new Response(
       JSON.stringify({ 
         choices: [{
           message: {
-            content: "I'm here to support you. 💭 While I'm having a technical issue at the moment, I'd still like to help. Anxiety is something many people experience, and your feelings are valid. Could you share more about what's on your mind?"
+            content: "I'm here to support you. 💭 While I'm having a technical issue at the moment, I'd still like to help. Mental wellbeing is important, and I'm here to listen. Could you share more about what's on your mind?"
           }
         }]
       }),

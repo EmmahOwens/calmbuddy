@@ -9,6 +9,18 @@ const corsHeaders = {
 
 const systemPrompt = `You are an empathetic and professional mental health companion chatbot. Your job is to suggest helpful prompts that the human user might want to say next based on the conversation context. Generate prompts from the user's perspective, as if the user is talking to you.
 
+Your suggestions should cover a wide range of mental health topics, including but not limited to:
+- Anxiety and stress management
+- Mood disorders and depression
+- Sleep issues
+- Mindfulness and meditation
+- Relationships and social support
+- Work-life balance
+- Self-care practices
+- Grief and loss
+- Trauma support
+- Habit formation
+
 Your suggestions should be:
 - From the user's perspective (what THEY would say to YOU)
 - Phrased primarily as statements or expressions rather than questions
@@ -23,7 +35,7 @@ If the conversation has context, suggest relevant statements, expressions of fee
 // Default fallback suggestions for different states
 const initialFallbackSuggestions = [
   "I'm feeling anxious today",
-  "I've been struggling with stress lately",
+  "I've been struggling with sleep lately",
   "Sometimes I feel overwhelmed",
   "I need help with my emotions",
   "I want to improve my mental wellbeing"
@@ -36,6 +48,98 @@ const ongoingFallbackSuggestions = [
   "This is making me feel better",
   "Let me share something else"
 ];
+
+// Additional backup suggestion sets for different topics
+const topicalFallbackSuggestions = {
+  anxiety: [
+    "I feel anxious in social situations",
+    "My anxiety keeps me from sleeping",
+    "I'm worried about the future",
+    "I have frequent panic attacks", 
+    "My anxiety is affecting my work"
+  ],
+  depression: [
+    "I've been feeling down lately",
+    "I've lost interest in my hobbies",
+    "I'm having trouble getting motivated",
+    "Some days I can't get out of bed",
+    "I don't enjoy things like I used to"
+  ],
+  sleep: [
+    "I have trouble falling asleep",
+    "I wake up feeling tired",
+    "My sleep schedule is irregular",
+    "I have frequent nightmares",
+    "I can't stay asleep through the night"
+  ],
+  stress: [
+    "Work stress is overwhelming me",
+    "I feel tense most of the time",
+    "I'm having trouble relaxing",
+    "My stress is affecting my health",
+    "I need better coping strategies"
+  ],
+  relationships: [
+    "I'm having conflict with my family",
+    "My relationship is struggling",
+    "I feel lonely most of the time",
+    "I have trouble connecting with others",
+    "I want to improve my social life"
+  ],
+  mindfulness: [
+    "I want to be more present",
+    "Meditation has been helping me",
+    "I'm trying to practice mindfulness",
+    "Being in nature helps me center",
+    "I notice my thoughts racing often"
+  ],
+  general: [
+    "Let me tell you about my day",
+    "I've been thinking about something",
+    "Can we talk about self-care",
+    "I'm working on improving my habits",
+    "I need some encouragement"
+  ]
+};
+
+// Function to detect the topic from conversation context
+function detectTopic(messages) {
+  if (!messages || messages.length === 0) {
+    return "general";
+  }
+  
+  // Extract text from last 2 messages if available
+  const recentText = messages
+    .slice(-2)
+    .map(msg => msg.content.toLowerCase())
+    .join(" ");
+  
+  if (/anxi|nervous|worry|panic|afraid|fear/i.test(recentText)) {
+    return "anxiety";
+  }
+  
+  if (/depress|sad|down|low|unhappy|blue|hopeless/i.test(recentText)) {
+    return "depression";
+  }
+  
+  if (/sleep|insomnia|tired|rest|awake|night/i.test(recentText)) {
+    return "sleep";
+  }
+  
+  if (/stress|overwhelm|pressure|burden|too much/i.test(recentText)) {
+    return "stress";
+  }
+  
+  if (/relation|friend|family|partner|colleague|social|lonely/i.test(recentText)) {
+    return "relationships";
+  }
+  
+  if (/mindful|meditat|breath|present|focus|aware/i.test(recentText)) {
+    return "mindfulness";
+  }
+  
+  return "general";
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -71,7 +175,7 @@ serve(async (req) => {
             model: "gpt-4o-mini",
             messages: [
               { role: "system", content: systemPrompt },
-              { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, primarily as statements rather than questions." }
+              { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, covering a diverse range of topics. Make them primarily statements rather than questions." }
             ],
             temperature: 0.7,
             max_tokens: 150,
@@ -110,7 +214,7 @@ serve(async (req) => {
               model: "gpt-3.5-turbo",
               messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, primarily as statements rather than questions." }
+                { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, covering a diverse range of topics. Make them primarily statements rather than questions." }
               ],
               temperature: 0.7,
               max_tokens: 150,
@@ -159,7 +263,7 @@ serve(async (req) => {
             messages: [
               { role: "system", content: systemPrompt },
               ...conversationContext,
-              { role: "user", content: "Based on our conversation, suggest 5 things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
+              { role: "user", content: "Based on our conversation, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
             ],
             temperature: 0.7,
             max_tokens: 150,
@@ -199,7 +303,7 @@ serve(async (req) => {
               messages: [
                 { role: "system", content: systemPrompt },
                 ...conversationContext,
-                { role: "user", content: "Based on our conversation, suggest 5 things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
+                { role: "user", content: "Based on our conversation, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions." }
               ],
               temperature: 0.7,
               max_tokens: 150,
@@ -224,9 +328,15 @@ serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         } catch (fallbackError) {
-          console.error('Both models failed, using fallback suggestions:', fallbackError);
-          // Return default fallback suggestions
-          return new Response(JSON.stringify({ suggestions: ongoingFallbackSuggestions }), {
+          console.error('Both models failed, using topical fallback suggestions:', fallbackError);
+          
+          // Detect topic from conversation and provide relevant fallbacks
+          const detectedTopic = detectTopic(messages);
+          const topicalSuggestions = topicalFallbackSuggestions[detectedTopic] || ongoingFallbackSuggestions;
+          
+          console.log(`Using fallback suggestions for topic: ${detectedTopic}`);
+          
+          return new Response(JSON.stringify({ suggestions: topicalSuggestions }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
           });
@@ -235,15 +345,15 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Error in generate-prompts function:', error);
-    // Return fallback suggestions
+    // Return fallback suggestions with diverse topics
     return new Response(
       JSON.stringify({ 
         suggestions: [
           "I'm feeling overwhelmed today.",
-          "Let me tell you about my week.",
-          "I'm struggling with work stress.",
+          "Let me tell you about my sleep problems.",
+          "I'm struggling with work relationships.",
           "I've been practicing mindfulness.",
-          "My sleep patterns have been irregular."
+          "My mood has been low lately."
         ]
       }),
       { 
