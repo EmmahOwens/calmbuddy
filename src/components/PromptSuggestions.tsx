@@ -51,7 +51,7 @@ export function PromptSuggestions({
         <>
           {visibleSuggestions.map((suggestion, index) => (
             <Button
-              key={index}
+              key={`${suggestion}-${index}`} // Added index to key to ensure uniqueness
               variant="outline"
               className={cn(
                 "text-xs md:text-sm rounded-full px-3 md:px-4 py-1 md:py-2 h-auto text-left",

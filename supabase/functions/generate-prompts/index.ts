@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -24,15 +25,17 @@ Your suggestions should be:
 - From the user's perspective (what THEY would say to YOU)
 - Phrased primarily as statements or expressions rather than questions
 - Supportive of their mental health journey
-- Relevant to the current conversation topic
+- DIRECTLY RELEVANT to the current conversation topic and recent messages
 - Natural follow-ups to the conversation flow
 - Brief (max 10 words per suggestion)
 - Diverse in topic and approach
-- Personalized to the current conversation history
+- Personalized to reflect exact details mentioned in the conversation
 
-IMPORTANT: Pay close attention to the previous messages to ensure highly relevant next-message suggestions that would logically follow in the conversation. Analyze the emotional tone, specific topics mentioned, and personal details shared to create truly personalized suggestions. NEVER provide generic suggestions when context is available.
+EXTREMELY IMPORTANT: Analyze the conversation deeply - look for specific topics, symptoms, experiences, emotions, or situations the user has mentioned, and create suggestions that DIRECTLY reference these exact details. NEVER provide generic suggestions that could apply to any conversation. Every suggestion must reference something specific from the conversation.
 
-If the user has mentioned specific symptoms, concerns, or situations, your suggestions should directly reference or follow up on those exact points.`;
+If the user mentions anxiety symptoms, suggest statements about those exact symptoms.
+If they talk about a relationship issue, suggest statements about that specific relationship dynamic.
+If they mention work stress, offer statements about their particular work situation.`;
 
 // Default fallback suggestions for different states
 const initialFallbackSuggestions = [
@@ -140,23 +143,42 @@ function detectTopic(messages) {
     return "mindfulness";
   }
   
-  if (/work|job|career|profession|coworker|boss/i.test(recentText)) {
-    return "work";
-  }
-  
-  if (/eat|food|diet|nutrition|appetite|weight/i.test(recentText)) {
-    return "eating";
-  }
-  
-  if (/exercise|workout|fitness|active|run|walk|gym/i.test(recentText)) {
-    return "exercise";
-  }
-  
-  if (/therapy|therapist|counseling|professional|doctor|psychologist/i.test(recentText)) {
-    return "professional_help";
-  }
-  
   return "general";
+}
+
+// Extract important topics and keywords from conversation
+function extractKeywords(messages) {
+  if (!messages || messages.length === 0) {
+    return [];
+  }
+  
+  // Get last few messages for better context
+  const recentMessages = messages.slice(-4);
+  const fullText = recentMessages.map(msg => msg.content.toLowerCase()).join(" ");
+  
+  // Look for important keywords in mental health contexts
+  const possibleKeywords = [
+    // Emotions
+    "happy", "sad", "angry", "frustrated", "anxious", "worried", "scared", "lonely", 
+    "hopeful", "hopeless", "overwhelmed", "calm", "peaceful", "stressed",
+    
+    // Relationships
+    "partner", "spouse", "husband", "wife", "boyfriend", "girlfriend", "friend", 
+    "family", "parent", "child", "coworker", "boss",
+    
+    // Symptoms
+    "insomnia", "fatigue", "exhaustion", "pain", "headache", "nausea", 
+    "panic attack", "breathing", "heart racing", "crying", "sleeping",
+    
+    // Activities
+    "work", "exercise", "meditation", "therapy", "medication", "reading", 
+    "walking", "yoga", "journaling", "hobby",
+    
+    // Time references
+    "morning", "night", "day", "week", "month", "year", "yesterday", "tomorrow"
+  ];
+  
+  return possibleKeywords.filter(word => fullText.includes(word));
 }
 
 serve(async (req) => {
@@ -166,14 +188,22 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, currentState } = await req.json();
+    const { messages } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
     
-    console.log(`Generate prompts received ${messages.length} messages for context`);
+    console.log(`Generate prompts received ${messages?.length || 0} messages for context`);
+
+    // If no messages, return initial suggestions
+    if (!messages || messages.length === 0) {
+      console.log("No message context provided, returning initial suggestions");
+      return new Response(JSON.stringify({ suggestions: initialFallbackSuggestions }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Convert messages to the format expected by the OpenAI API
     const conversationContext = messages.map(msg => ({
@@ -181,217 +211,112 @@ serve(async (req) => {
       content: msg.content
     }));
 
-    // Always use context if available, regardless of state
-    if (conversationContext.length > 0) {
-      console.log("Generating context-aware prompt suggestions based on conversation");
+    // Extract keywords to help with fallbacks if API fails
+    const keywords = extractKeywords(messages);
+    console.log("Extracted keywords:", keywords);
+
+    try {
+      // First attempt with primary model
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...conversationContext.slice(-6), // Send last 6 messages for context
+            { 
+              role: "user", 
+              content: `Based ONLY on our conversation so far (${messages.length} messages), suggest 5 things I might want to say to you next as the human user. Make these DIRECTLY RELEVANT to the SPECIFIC topics we've discussed. Reference exact details I've mentioned.
+              
+Current timestamp (for uniqueness): ${new Date().toISOString()}
+Keywords detected: ${keywords.join(", ")}
+
+DO NOT suggest generic statements that could apply to any conversation. 
+Every suggestion must directly reference something specific from our conversation.
+Format each suggestion on a new line with a dash (-) prefix.` 
+            }
+          ],
+          temperature: 1.0, // Higher temperature for more varied responses
+          max_tokens: 200,
+          frequency_penalty: 1.0, // Strongly discourage repetition
+          presence_penalty: 1.0, // Strongly encourage mentioning new topics
+        }),
+      });
+
+      // Check if response is ok
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("OpenAI API error:", errorData);
+        throw new Error(errorData.error?.message || 'OpenAI API error');
+      }
+
+      const data = await response.json();
+      const suggestionsText = data.choices[0].message.content;
       
-      try {
-        // First attempt with primary model
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...conversationContext,
-              { 
-                role: "user", 
-                content: `Based on our conversation history, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions. Make sure these are DIRECTLY RELEVANT to our SPECIFIC conversation and topics we've discussed. Use our exact conversation topics, not generic suggestions. Current timestamp: ${new Date().toISOString()} (use this for variety).` 
-              }
-            ],
-            temperature: 0.9,
-            max_tokens: 150,
-            frequency_penalty: 0.7,
-            presence_penalty: 0.7,
-          }),
-        });
+      console.log("Raw suggestions from API:", suggestionsText);
+      
+      // Better parsing for suggestions
+      const suggestions = suggestionsText
+        .split(/\n|-|\d+\./)
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && line.length < 80)
+        .slice(0, 5);
 
-        const data = await response.json();
+      console.log("Parsed suggestions:", suggestions);
 
-        if (!response.ok) {
-          console.error('OpenAI API error with primary model:', data.error);
-          throw new Error(data.error?.message || 'Failed to get AI response');
-        }
-
-        const suggestionsText = data.choices[0].message.content;
-        const suggestions = suggestionsText
-          .split(/\n|•|-|\d+\./)
-          .map(line => line.trim())
-          .filter(line => line.length > 0 && line.length < 70)
-          .slice(0, 5);
-
-        console.log("Successfully generated contextual suggestions:", suggestions);
-
-        return new Response(JSON.stringify({ suggestions: suggestions.length > 0 ? suggestions : ongoingFallbackSuggestions }), {
+      if (suggestions.length > 0) {
+        return new Response(JSON.stringify({ suggestions }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
-      } catch (error) {
-        console.error('Error with primary model, attempting fallback model:', error);
-        
-        try {
-          // Fallback to a different model
-          const fallbackResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${openAIApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: "gpt-3.5-turbo",
-              messages: [
-                { role: "system", content: systemPrompt },
-                ...conversationContext,
-                { 
-                  role: "user", 
-                  content: `Based on our conversation history, suggest 5 diverse things I might want to say to you next, from my perspective as the human user. Focus on statements rather than questions. Make sure these are DIRECTLY RELEVANT to our SPECIFIC conversation and topics we've discussed. Use our exact conversation topics, not generic suggestions. Current timestamp: ${new Date().toISOString()} (use this for variety).` 
-                }
-              ],
-              temperature: 0.9,
-              max_tokens: 150,
-              frequency_penalty: 0.7,
-              presence_penalty: 0.7,
-            }),
-          });
-
-          const fallbackData = await fallbackResponse.json();
-
-          if (!fallbackResponse.ok) {
-            console.error('Fallback model also failed:', fallbackData.error);
-            throw new Error(fallbackData.error?.message || 'Failed with both primary and fallback models');
-          }
-
-          const suggestionsText = fallbackData.choices[0].message.content;
-          const suggestions = suggestionsText
-            .split(/\n|•|-|\d+\./)
-            .map(line => line.trim())
-            .filter(line => line.length > 0 && line.length < 70)
-            .slice(0, 5);
-
-          return new Response(JSON.stringify({ suggestions: suggestions.length > 0 ? suggestions : ongoingFallbackSuggestions }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } catch (fallbackError) {
-          console.error('Both models failed, using topical fallback suggestions:', fallbackError);
-          
-          // Detect topic from conversation and provide relevant fallbacks
-          const detectedTopic = detectTopic(messages);
-          const topicalSuggestions = topicalFallbackSuggestions[detectedTopic] || ongoingFallbackSuggestions;
-          
-          console.log(`Using fallback suggestions for topic: ${detectedTopic}`);
-          
-          return new Response(JSON.stringify({ suggestions: topicalSuggestions }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          });
-        }
+      } else {
+        throw new Error("No valid suggestions extracted from API response");
       }
-    } else {
-      // Initial state with no context
-      console.log("Generating initial prompt suggestions");
+    } catch (error) {
+      console.error('Error with primary model:', error);
       
-      try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, covering a diverse range of topics. Make them primarily statements rather than questions." }
-            ],
-            temperature: 0.8,
-            max_tokens: 150,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error('OpenAI API error with primary model:', data.error);
-          throw new Error(data.error?.message || 'Failed to get AI response');
-        }
-
-        const suggestionsText = data.choices[0].message.content;
-        const suggestions = suggestionsText
-          .split(/\n|•|-|\d+\./)
-          .map(line => line.trim())
-          .filter(line => line.length > 0 && line.length < 70)
-          .slice(0, 5);
-
-        return new Response(JSON.stringify({ suggestions: suggestions.length > 0 ? suggestions : initialFallbackSuggestions }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (error) {
-        console.error('Error with primary model, attempting fallback model:', error);
-        
-        try {
-          // Fallback to a different model
-          const fallbackResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${openAIApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: "gpt-3.5-turbo",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: "I'm starting a new conversation. Suggest 5 things I might want to say to you as my mental health companion, covering a diverse range of topics. Make them primarily statements rather than questions." }
-              ],
-              temperature: 0.7,
-              max_tokens: 150,
-            }),
-          });
-
-          const fallbackData = await fallbackResponse.json();
-
-          if (!fallbackResponse.ok) {
-            console.error('Fallback model also failed:', fallbackData.error);
-            throw new Error(fallbackData.error?.message || 'Failed with both primary and fallback models');
-          }
-
-          const suggestionsText = fallbackData.choices[0].message.content;
-          const suggestions = suggestionsText
-            .split(/\n|•|-|\d+\./)
-            .map(line => line.trim())
-            .filter(line => line.length > 0 && line.length < 70)
-            .slice(0, 5);
-
-          return new Response(JSON.stringify({ suggestions: suggestions.length > 0 ? suggestions : initialFallbackSuggestions }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } catch (fallbackError) {
-          console.error('Both models failed, using fallback suggestions:', fallbackError);
-          // Return default fallback suggestions
-          return new Response(JSON.stringify({ suggestions: initialFallbackSuggestions }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          });
+      // Enhanced fallback - use detected topic from conversation
+      const detectedTopic = detectTopic(messages);
+      console.log(`Falling back to topic-based suggestions for: ${detectedTopic}`);
+      
+      // Try to create custom fallbacks using extracted keywords
+      let customFallbacks = [];
+      if (keywords.length > 0) {
+        for (const keyword of keywords.slice(0, 5)) {
+          customFallbacks.push(`I want to talk more about ${keyword}`);
         }
       }
+      
+      // Merge custom and topical fallbacks, prioritizing custom ones
+      const fallbackSuggestions = [
+        ...customFallbacks,
+        ...(topicalFallbackSuggestions[detectedTopic] || ongoingFallbackSuggestions)
+      ].slice(0, 5);
+      
+      return new Response(JSON.stringify({ suggestions: fallbackSuggestions }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
     }
   } catch (error) {
     console.error('Error in generate-prompts function:', error);
-    // Return fallback suggestions with diverse topics
+    
+    // Ultimate fallback
     return new Response(
       JSON.stringify({ 
         suggestions: [
-          "I'm feeling overwhelmed today.",
-          "Let me tell you about my sleep problems.",
-          "I'm struggling with work relationships.",
-          "I've been practicing mindfulness.",
-          "My mood has been low lately."
+          "I'm feeling overwhelmed today",
+          "Let me tell you about my sleep problems",
+          "I've been practicing mindfulness lately",
+          "My anxiety has been getting worse",
+          "I'm struggling with a relationship"
         ]
       }),
       { 
-        status: 200, // Return 200 status to avoid breaking the client
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

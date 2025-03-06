@@ -112,28 +112,30 @@ const Index = () => {
     }
   }, [showSidebar, isMobile]);
 
-  const fetchPromptSuggestions = async (state: "initial" | "ongoing" = "initial") => {
+  const fetchPromptSuggestions = async () => {
     try {
       setIsLoadingSuggestions(true);
       
-      const contextMessages = messages.slice(-3); 
+      console.log("Fetching prompt suggestions with", messages.length, "messages as context");
       
       const { data, error } = await supabase.functions.invoke('generate-prompts', {
         body: {
-          messages: contextMessages,
-          currentState: state
+          messages: messages
         }
       });
 
       if (error) throw new Error(error.message);
       
+      console.log("Got suggestions:", data.suggestions);
       setPromptSuggestions(data.suggestions || []);
     } catch (error) {
       console.error("Error fetching prompt suggestions:", error);
       setPromptSuggestions([
-        "How are you feeling today?",
-        "What's been on your mind lately?",
-        "Would you like to talk about something specific?"
+        "I'm feeling anxious today",
+        "Can you suggest some coping techniques?",
+        "I've been having trouble sleeping",
+        "Let me tell you more about what's happening",
+        "How can I manage stress better?"
       ]);
     } finally {
       setIsLoadingSuggestions(false);
@@ -220,9 +222,7 @@ const Index = () => {
       setMessages(messagesList);
       
       if (messagesList.length > 0) {
-        fetchPromptSuggestions("ongoing");
-      } else {
-        fetchPromptSuggestions("initial");
+        fetchPromptSuggestions();
       }
     };
 
@@ -313,11 +313,13 @@ const Index = () => {
 
       if (messageError) throw new Error(messageError.message);
 
-      setMessages(prev => [...prev, {
+      const newMessages = [...messages, {
         id: savedMessage.id,
         content: savedMessage.content,
         isBot: savedMessage.is_bot
-      }]);
+      }];
+      
+      setMessages(newMessages);
 
       if (messages.length === 1) {
         await supabase
@@ -334,7 +336,7 @@ const Index = () => {
         );
       }
 
-      const conversationHistory = messages.slice(-4).map(msg => ({
+      const conversationHistory = newMessages.slice(-6).map(msg => ({
         role: msg.isBot ? "assistant" : "user",
         content: msg.content
       }));
@@ -343,8 +345,7 @@ const Index = () => {
         body: {
           messages: [
             { role: "system", content: systemPrompt },
-            ...conversationHistory,
-            { role: "user", content: message }
+            ...conversationHistory
           ]
         }
       });
@@ -378,9 +379,7 @@ const Index = () => {
         .update({ updated_at: new Date().toISOString() })
         .eq('id', currentSessionId);
         
-      setTimeout(() => {
-        fetchPromptSuggestions("ongoing");
-      }, 500);
+      fetchPromptSuggestions();
 
     } catch (error) {
       console.error("Error in chat:", error);
@@ -502,6 +501,12 @@ const Index = () => {
       scrollToBottom();
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      fetchPromptSuggestions();
+    }
+  }, [messages]);
 
   return (
     <div className="flex h-screen relative" ref={mainContainerRef}>
