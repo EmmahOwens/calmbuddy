@@ -130,13 +130,23 @@ const Index = () => {
       setPromptSuggestions(data.suggestions || []);
     } catch (error) {
       console.error("Error fetching prompt suggestions:", error);
-      setPromptSuggestions([
-        "I'm feeling anxious today",
-        "Can you suggest some coping techniques?",
-        "I've been having trouble sleeping",
-        "Let me tell you more about what's happening",
-        "How can I manage stress better?"
-      ]);
+      if (messages.length === 0) {
+        setPromptSuggestions([
+          "I'm feeling anxious today",
+          "I've been having trouble sleeping",
+          "Sometimes I feel overwhelmed",
+          "I'd like to talk about my stress",
+          "I want to improve my mental health"
+        ]);
+      } else {
+        setPromptSuggestions([
+          "That's helpful, thank you",
+          "Let me tell you more about that",
+          "I've been feeling this way for a while",
+          "Could you explain that differently?",
+          "I want to work on this issue"
+        ]);
+      }
     } finally {
       setIsLoadingSuggestions(false);
     }
@@ -507,6 +517,16 @@ const Index = () => {
       fetchPromptSuggestions();
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timer = setTimeout(() => {
+        fetchPromptSuggestions();
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length]);
 
   return (
     <div className="flex h-screen relative" ref={mainContainerRef}>
