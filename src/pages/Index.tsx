@@ -239,7 +239,7 @@ const Index = () => {
       if (!existingSessions || existingSessions.length === 0) {
         await createNewChat();
       } else {
-        fetchPromptSuggestions("initial");
+        fetchPromptSuggestions();
       }
     };
 
@@ -287,7 +287,7 @@ const Index = () => {
         isBot: welcomeMessage.is_bot
       }]);
       
-      fetchPromptSuggestions("initial");
+      fetchPromptSuggestions();
     }
   };
 
